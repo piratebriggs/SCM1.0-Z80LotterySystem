@@ -1,0 +1,21 @@
+Hardware identification, passive read tests
+
+
+68B50 ACIA
+Read from 0x80, mask with 0000 1100, test for 0000 0000.
+
+Z80 SIO RC2014 standard addressing in SCM-R*
+Read from 0x80, mask with 0010 1100, test for 0010 1100.
+Read from 0x82, mask with 0010 1100, test for 0010 1100.
+
+Z80 SIO Zilog standard addressing in SCM-R*
+Read from 0x82, mask with 0010 1100, test for 0010 1100.
+Read from 0x83, mask with 0010 1100, test for 0010 1100.
+
+Z80 SIO RC2014 standard addressing in SCM-S3
+Read from 0x80, mask with 0000 1100, test for 0000 1100.
+Read from 0x82, mask with 0000 1100, test for 0000 1100.
+
+Z80 SIO RC2014 standard addressing in SCM-S3
+Read from 0x82, mask with 0000 1100, test for 0000 1100.
+Read from 0x83, mask with 0000 1100, test for 0000 1100.
