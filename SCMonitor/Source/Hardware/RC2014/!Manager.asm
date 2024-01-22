@@ -9,7 +9,7 @@
 ;   Initialising hardware
 
 ; Global constants
-kSIO2:      .EQU 0x00           ;Base address of SIO/2 chip
+kSIO2:      .EQU 0x60           ;Base address of SIO/2 chip
 kPrtIn:     .EQU 0x15           ;General input port  (PIO Port B)
 kPrtOut:    .EQU 0x15           ;General output port (PIO Port B)
 kPIO_M:     .EQU 0x17           ;General input port  (PIO Config)

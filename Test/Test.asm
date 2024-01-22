@@ -18,48 +18,52 @@ kSIOBDatT3: .EQU 0x62        ;I/O address of data register B
 
 ColdStrt:   DI                  ;Disable interrupts
             LD   SP, 0xFFFF     ;Initialise system stack pointer
-
             LD A,PIO_CFG 		; 
             OUT (PIO_M),A		; 
 
 Loop:
-            LD A,0x00           ; all off
-            OUT (PIO_B),A		; Set port A 
-
-A_RTS_OFF:
-            LD A,0x05 ;write into WR0: select WR5
-            OUT (kSIOAConT3),A
-            LD A,0xE8 ;
-            OUT (kSIOAConT3),A
-B_RTS_ON:
-            LD A,0x05 ;write into WR0: select WR5
-            OUT (kSIOBConT3),A
-            LD A,0xEA ;
-            OUT (kSIOBConT3),A
-
-
-            LD BC,$FFFF   ;1~ second delay
-            CALL DELAY
-
-BIT5_ON:
             LD A,0x10           ; bit 5
             OUT (PIO_B),A		; Set port A 
-
-A_RTS_ON:
-            LD A,0x05 ;write into WR0: select WR5
-            OUT (kSIOAConT3),A
-            LD A,0xEA ;
-            OUT (kSIOAConT3),A
-B_RTS_OFF:
-            LD A,0x05 ;write into WR0: select WR5
-            OUT (kSIOBConT3),A
-            LD A,0xE8 ;
-            OUT (kSIOBConT3),A
-
-            LD BC,$6666   ;~0.3 second delay
+            LD BC,$6666   ; short second delay
             CALL DELAY
-            
-            JR Loop
+
+            LD A,0x00           ; all off
+            OUT (PIO_B),A		; Set port A 
+            LD BC,$FFFF   ; long second delay
+            CALL DELAY
+
+            LD A,0x10           ; bit 5
+            OUT (PIO_B),A		; Set port A 
+            LD BC,$6666   ; short second delay
+            CALL DELAY
+
+            LD A,0x00           ; all off
+            OUT (PIO_B),A		; Set port A 
+            LD BC,$FFFF   ; long second delay
+            CALL DELAY
+
+            IN   A,(kSIOAConT3) ;Read status (control) register A
+            OUT (PIO_B),A		; Set port A 
+            LD BC,$FFFF   ; long second delay
+            CALL DELAY
+
+            LD A,0x10           ; bit 5
+            OUT (PIO_B),A		; Set port A 
+            LD BC,$6666   ; short second delay
+            CALL DELAY
+
+            LD A,0x00           ; all off
+            OUT (PIO_B),A		; Set port A 
+            LD BC,$FFFF   ; long second delay
+            CALL DELAY
+
+            IN   A,(kSIOBConT3) ;Read status (control) register A
+            OUT (PIO_B),A		; Set port A 
+            LD BC,$FFFF   ; long second delay
+            CALL DELAY
+
+            JP Loop
+
 
 ; INPUT: Loop count in BC
 DELAY:

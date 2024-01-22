@@ -65,11 +65,9 @@ kSIOTxRdy:  .EQU 2              ;Transmit data empty bit number
 ; Device detection, test 1
 ; This test just reads from the devices' status (control) register
 ; and looks for register bits in known states:
-; CTS input bit = high
-; DCD input bit = high
 ; Transmit data register empty bit = high
-kSIOMask1:  .EQU  0b00101100    ;Mask for known bits in control reg
-kSIOTest1:  .EQU  0b00101100    ;Test value following masking
+kSIOMask1:  .EQU  0b00000100    ;Mask for known bits in control reg
+kSIOTest1:  .EQU  0b00000100    ;Test value following masking
 
 
             .CODE
@@ -318,7 +316,7 @@ RC2014_SerialSIO2_IniSend:
 ;           .DB  0b00000010     ; Wr0 Pointer R2
 ;           .DB  0x00           ; Wr2 Int vector
             .DB  0b00010100     ; Wr0 Pointer R4 + reset ex st int
-            .DB  0b00000100     ; Wr4 /1, async mode, no parity
+            .DB  0b01000100     ; Wr4 /16, async mode, no parity
             .DB  0b00000011     ; Wr0 Pointer R3
             .DB  0b11000001     ; Wr3 Receive enable, 8 bit 
             .DB  0b00000101     ; Wr0 Pointer R5
