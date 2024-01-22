@@ -15,6 +15,7 @@
 ; Address signals:
 ; Original: SIO C/D line = A1,  SIO B/A line = A0
 ; Official: SIO C/D line = /A0, SIO B/A line = A1
+; Lottery : SIO C/D line = A0,  SIO B/A line = A1
 ;
 ; RC2014 standard addresses for Grant's original SIO/2: (type 1)
 ; 0x82   Channel A control registers (read and write)
@@ -27,6 +28,12 @@
 ; 0x81   Channel A data registers (read and write)
 ; 0x82   Channel B control registers (read and write)
 ; 0x83   Channel B data registers (read and write)
+;
+; Lottery addresses for SIO/2:
+; 0x81   Channel A control registers (read and write)
+; 0x80   Channel A data registers (read and write)
+; 0x83   Channel B control registers (read and write)
+; 0x82   Channel B data registers (read and write)
 ;
 ; Too complex to reproduce technical info here. See SIO datasheet
 
@@ -44,6 +51,12 @@ kSIOAConT2: .EQU kSIO2+0        ;I/O address of control register A
 kSIOADatT2: .EQU kSIO2+1        ;I/O address of data register A
 kSIOBConT2: .EQU kSIO2+2        ;I/O address of control register B
 kSIOBDatT2: .EQU kSIO2+3        ;I/O address of data register B
+;
+; SIO/2 type 3 registers derived from base address (above)
+kSIOAConT3: .EQU kSIO2+1        ;I/O address of control register A
+kSIOADatT3: .EQU kSIO2+0        ;I/O address of data register A
+kSIOBConT3: .EQU kSIO2+3        ;I/O address of control register B
+kSIOBDatT3: .EQU kSIO2+2        ;I/O address of data register B
 
 ; Status (control) register bit numbers
 kSIORxRdy:  .EQU 0              ;Receive data available bit number
@@ -211,6 +224,79 @@ RC2014_SerialSIO2B_OutputChar_T2:
             OR   0xFF           ;Return success A=0xFF and NZ flagged
             RET
 
+; **********************************************************************
+; **  Type 3 (Lottery addressing scheme)                              **
+; **********************************************************************
+
+; RC2014 type 3 serial SIO/2 initialise
+;   On entry: No parameters required
+;   On exit:  Z flagged if device is found and initialised
+;             AF BC DE HL not specified
+;             IX IY I AF' BC' DE' HL' preserved
+; If the device is found it is initialised
+RC2014_SerialSIO2_Initialise_T3:
+; First look to see if the device is present
+            IN   A,(kSIOAConT3) ;Read status (control) register A
+            AND  kSIOMask1      ;Mask for known bits in control reg
+            CP   kSIOTest1      ;Test value following masking
+            RET  NZ             ;Return not found NZ flagged
+            IN   A,(kSIOBConT3) ;Read status (control) register B
+            AND  kSIOMask1      ;Mask for known bits in control reg
+            CP   kSIOTest1      ;Test value following masking
+            RET  NZ             ;Return not found NZ flagged
+; Device present, so initialise 
+            LD   C,kSIOAConT3   ;SIO/2 channel A control port
+            CALL RC2014_SerialSIO2_IniSend
+            LD   C,kSIOBConT3   ;SIO/2 channel B control port
+            JP   RC2014_SerialSIO2_IniSend
+
+
+; RC2014 type 2 serial SIO/2 channel A & B input character
+;   On entry: No parameters required
+;   On exit:  A = Character input from the device
+;             NZ flagged if character input
+;             BC DE HL IX IY I AF' BC' DE' HL' preserved
+RC2014_SerialSIO2A_InputChar_T3:
+            IN   A,(kSIOAConT3) ;Address of status register
+            BIT  kSIORxRdy,A    ;Receive byte available
+            RET  Z              ;Return Z if no character
+            IN   A,(kSIOADatT3) ;Read data byte
+            RET
+RC2014_SerialSIO2B_InputChar_T3:
+            IN   A,(kSIOBConT3) ;Address of status register
+            BIT  kSIORxRdy,A    ;Receive byte available
+            RET  Z              ;Return Z if no character
+            IN   A,(kSIOBDatT3) ;Read data byte
+            RET
+
+
+; RC2014 type 2 serial SIO/2 channel A & B output character
+;   On entry: A = Character to be output to the device
+;   On exit:  If character output successful (eg. device was ready)
+;               NZ flagged and A != 0
+;             If character output failed (eg. device busy)
+;               Z flagged and A = Character to output
+;             BC DE HL IX IY I AF' BC' DE' HL' preserved
+RC2014_SerialSIO2A_OutputChar_T3:
+            PUSH BC
+            LD   C,kSIOAConT3   ;SIO control register
+            IN   B,(C)          ;Read SIO control register
+            BIT  kSIOTxRdy,B    ;Transmit register full?
+            POP  BC
+            RET  Z              ;Return Z as character not output
+            OUT  (kSIOADatT3),A ;Write data byte
+            OR   0xFF           ;Return success A=0xFF and NZ flagged
+            RET
+RC2014_SerialSIO2B_OutputChar_T3:
+            PUSH BC
+            LD   C,kSIOBConT3   ;SIO control register
+            IN   B,(C)          ;Read SIO control register
+            BIT  kSIOTxRdy,B    ;Transmit register full?
+            POP  BC
+            RET  Z              ;Return Z as character not output
+            OUT  (kSIOBDatT3),A ;Write data byte
+            OR   0xFF           ;Return success A=0xFF and NZ flagged
+            RET
 
 ; **********************************************************************
 ; **  Private functions                                               **
@@ -232,7 +318,7 @@ RC2014_SerialSIO2_IniSend:
 ;           .DB  0b00000010     ; Wr0 Pointer R2
 ;           .DB  0x00           ; Wr2 Int vector
             .DB  0b00010100     ; Wr0 Pointer R4 + reset ex st int
-            .DB  0b11000100     ; Wr4 /64, async mode, no parity
+            .DB  0b00000100     ; Wr4 /1, async mode, no parity
             .DB  0b00000011     ; Wr0 Pointer R3
             .DB  0b11000001     ; Wr3 Receive enable, 8 bit 
             .DB  0b00000101     ; Wr0 Pointer R5

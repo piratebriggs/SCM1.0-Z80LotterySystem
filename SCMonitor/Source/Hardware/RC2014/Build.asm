@@ -3,7 +3,7 @@
 ; **********************************************************************
 
 #IFNDEF     BUILD
-#DEFINE     BUILD R3
+#DEFINE     BUILD R1
 #ENDIF
 
 #INCLUDE    Monitor\Begin.asm

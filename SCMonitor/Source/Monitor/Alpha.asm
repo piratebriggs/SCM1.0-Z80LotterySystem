@@ -288,6 +288,12 @@ ColdStrt:   DI                  ;Disable interrupts
 ; This indicates status on the default output port (LEDs)
 ; At the end of a sucessful self test the default output port is cleared 
 ; to zero, otherwise the default output port indicates the failure
+#IF         BUILD = "R1"
+            LD A,kPIO_CFG 		; Load PIO Config vakue
+            OUT (kPIO_M),A		; Set PIO Config
+#INCLUDE    Monitor\Selftest.asm  ;Include self test functions
+#DEFINE     CUSTOM_SELFTEST
+#ENDIF
 #IF         BUILD = "S2"
 #INCLUDE    Hardware\SC_S2\Selftest.asm
 #DEFINE     CUSTOM_SELFTEST
@@ -297,10 +303,10 @@ ColdStrt:   DI                  ;Disable interrupts
 #ENDIF
 #ENDIF
 ; Copy vectors etc to page zero in case code is elsewhere
-            LD   DE,0x0000      ;Copy vectors etc to here
-            LD   HL,Page0Strt   ;Copy vectors etc from here
-            LD   BC,Page0End-Page0Strt  ;Number of bytes to copy
-            LDIR                ;Copy bytes
+            ; LD   DE,0x0000      ;Copy vectors etc to here
+            ; LD   HL,Page0Strt   ;Copy vectors etc from here
+            ; LD   BC,Page0End-Page0Strt  ;Number of bytes to copy
+            ; LDIR                ;Copy bytes
 ; Initialise jump table, other than console devices
             LD   DE,kJumpTab    ;Copy jump table to here
             LD   HL,JumpStrt    ;Copy jump table from here

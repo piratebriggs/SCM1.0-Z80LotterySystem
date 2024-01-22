@@ -9,14 +9,13 @@
 ;   Initialising hardware
 
 ; Global constants
-kSIO2:      .EQU 0x80           ;Base address of SIO/2 chip
-kACIA1:     .EQU 0x80           ;Base address of serial ACIA #1
-kACIA2:     .EQU 0x40           ;Base address of serial ACIA #2
-kPrtIn:     .EQU 0x00           ;General input port
-kPrtOut:    .EQU 0x00           ;General output port
+kSIO2:      .EQU 0x00           ;Base address of SIO/2 chip
+kPrtIn:     .EQU 0x15           ;General input port  (PIO Port B)
+kPrtOut:    .EQU 0x15           ;General output port (PIO Port B)
+kPIO_M:     .EQU 0x17           ;General input port  (PIO Config)
+kPIO_CFG:	.EQU	0x80	; Active, Mode 0, A & B & C Outputs
 
 ; Include device modules
-#INCLUDE    Hardware\RC2014\Serial6850.asm
 #INCLUDE    Hardware\RC2014\SerialSIO2.asm
 
 
@@ -27,7 +26,7 @@ kPrtOut:    .EQU 0x00           ;General output port
             .CODE
 
 ; Startup message
-szStartup:  .DB "RC2014",kNull
+szStartup:  .DB "Z80-Lottery",kNull
 
 
 ; Hardware initialise
@@ -45,45 +44,20 @@ szStartup:  .DB "RC2014",kNull
 Hardware_Initialise:
             XOR  A
             LD   (iHwFlags),A   ;Clear hardware flags
-; Look for SIO2 type 2 (official addressing scheme)
-            CALL RC2014_SerialSIO2_Initialise_T2
-            JR   NZ,@NoSIO2T2   ;Skip if SIO2 not found
+; Init PIO
+            LD A,kPIO_CFG 		; Load PIO Config vakue
+            OUT (kPIO_M),A		; Set PIO Config
+; Look for SIO2 type 3 (lottery addressing scheme)
+            CALL RC2014_SerialSIO2_Initialise_T3
+            JR   NZ,@NoSIO2T3   ;Skip if SIO2 not found
             LD   HL,iHwFlags    ;Get hardware flags
             SET  1,(HL)         ;Set SIO2 present flag
-            LD   HL,@PtrSIO2T2  ;Pointer to vector list
-            JR   @Serial4       ;Set up serial vectors
-@NoSIO2T2:
-; Look for SIO2 type 1 (original addressing scheme)
-            CALL RC2014_SerialSIO2_Initialise_T1
-            JR   NZ,@NoSIO2T1   ;Skip if SIO2 not found
-            LD   HL,iHwFlags    ;Get hardware flags
-            SET  1,(HL)         ;Set SIO2 present flag
-            LD   HL,@PtrSIO2T1  ;Pointer to vector list
+            LD   HL,@PtrSIO2T3  ;Pointer to vector list
 @Serial4:   LD   B,4            ;Number of jump vectors
-            JR   @Serial        ;Set up serial vectors
-@NoSIO2T1:
-; Look for 6850 ACIA #1
-            CALL RC2014_SerialACIA1_Initialise
-            JR   NZ,@NoACIA1    ;Skip if 6850 not found
-            LD   HL,iHwFlags    ;Get hardware flags
-            SET  0,(HL)         ;Set 6850 present flag
-            LD   HL,@PtrACIA1   ;Pointer to vector list
-            LD   B,2            ;Number of jump vectors
-            ;JR   @Serial       ;Set up serial vectors
 ; Set up jump table for serial device #1 or #1+#2
 @Serial:    LD   A,kFnDev1In    ;First device jump entry
             CALL InitJumps      ;Set up serial vectors
-@NoACIA1:
-; Look for 6850 ACIA #2
-            CALL RC2014_SerialACIA2_Initialise
-            JR   NZ,@NoACIA2    ;Skip if 6850 not found
-            LD   HL,iHwFlags    ;Get hardware flags
-            SET  2,(HL)         ;Set 6850 present flag
-            LD   HL,@PtrACIA2   ;Pointer to vector list
-            LD   B,2            ;Number of jump vectors
-            LD   A,kFnDev3In    ;First device jump entry
-            CALL InitJumps      ;Set up serial vectors
-@NoACIA2:
+@NoSIO2T3:
 ; Test if any console devices have been found
             LD   A,(iHwFlags)   ;Get device detected flags
             OR   A              ;Any found?
@@ -104,12 +78,12 @@ Hardware_Initialise:
             ; Device #2 = Serial SIO/2 channel B
             .DW  RC2014_SerialSIO2B_InputChar_T2
             .DW  RC2014_SerialSIO2B_OutputChar_T2
-@PtrACIA1:  ; Device #1 = Serial ACIA #1 module
-            .DW  RC2014_SerialACIA1_InputChar
-            .DW  RC2014_SerialACIA1_OutputChar
-@PtrACIA2:  ; Device #3 = Serial ACIA #2 module
-            .DW  RC2014_SerialACIA2_InputChar
-            .DW  RC2014_SerialACIA2_OutputChar
+@PtrSIO2T3: ; Device #1 = Serial SIO/2 channel A
+            .DW  RC2014_SerialSIO2A_InputChar_T3
+            .DW  RC2014_SerialSIO2A_OutputChar_T3
+            ; Device #2 = Serial SIO/2 channel B
+            .DW  RC2014_SerialSIO2B_InputChar_T3
+            .DW  RC2014_SerialSIO2B_OutputChar_T3
 
 
 ; Hardware: Set baud rate
@@ -167,20 +141,12 @@ Hardware_Signon:
 ;             IX IY I AF' BC' DE' HL' preserved
 Hardware_Devices:
             LD   HL,iHwFlags    ;Get hardware present flags
-            LD   DE,@szHw6850   ;Serial 6850 message
-            BIT  0,(HL)         ;Serial 6850 present?
-            CALL NZ,OutputZString ;Yes, so list it
             LD   DE,@szHwSIO2   ;Serial SIO/2 message
             BIT  1,(HL)         ;Serial SIO/2 present?
             CALL NZ,OutputZString ;Yes, so list it
-            LD   DE,@szHw6850B  ;Serial 6850 message
-            BIT  2,(HL)         ;Serial 6850 present?
-            CALL  NZ,OutputZString  ;Yes, so list it
             RET
-@szHw6850:  .DB  "1 = 6850 ACIA #1   (@80)",kNewLine,kNull
 @szHwSIO2:  .DB  "1 = Z80 SIO port A (@80)",kNewLine
             .DB  "2 = Z80 SIO port B (@82)",kNewLine,kNull
-@szHw6850B: .DB  "3 = 6850 ACIA #2   (@40)",kNewLine,kNull
 
 
 

@@ -8,11 +8,11 @@
 ; 1st character (major identifier): letter=official, number=user/custom
 ; 2nd character (minor identifier): 1-9=official, 0=user/custom
 ;
-#DEFINE    BUILD 00            ;Complete custom/user build
+;#DEFINE    BUILD 00            ;Complete custom/user build
 
 ;#DEFINE    BUILD L1            ;LiNC80 SBC1 standard 32k ROM
 
-;#DEFINE    BUILD R1            ;RC2014 08K ROM 32K RAM standard
+#DEFINE     BUILD R1            ;RC2014 08K ROM 32K RAM standard
 ;#DEFINE    BUILD R2            ;RC2014 16K ROM 48K RAM standard
 ;#DEFINE    BUILD R3            ;RC2014 32K ROM 32/64K RAM paged
 ;#DEFINE    BUILD R4            ;RC2014 16K ROM 32/64K RAM paged
