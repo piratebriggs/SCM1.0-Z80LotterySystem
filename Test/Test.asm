@@ -1,10 +1,10 @@
             .PROC Z80           ;<SCC> SCWorkshop select processor
             .HEXBYTES 0x18      ;<SCC> SCWorkshop Intel Hex output format
 
-PIO_A:	.EQU	0x14		; CA80 user 8255 base address 	  (port A)
-PIO_B:	.EQU	0x15		; CA80 user 8255 base address + 1 (port B)
-PIO_C:	.EQU	0x16		; CA80 user 8255 base address + 2 (fport C)
-PIO_M:	.EQU	0x17		; CA80 user 8255 control register
+PIO_A:	.EQU	0x74		; CA80 user 8255 base address 	  (port A)
+PIO_B:	.EQU	0x75		; CA80 user 8255 base address + 1 (port B)
+PIO_C:	.EQU	0x76		; CA80 user 8255 base address + 2 (fport C)
+PIO_M:	.EQU	0x77		; CA80 user 8255 control register
 PIO_CFG:	.EQU	0x80	; Active, Mode 0, A & B & C Outputs
 
 kSIOAConT3: .EQU 0x61        ;I/O address of control register A
@@ -39,12 +39,7 @@ B_RTS_ON:
 
 
             LD BC,$FFFF   ;1~ second delay
-DELAY1:
-            NOP
-            DEC BC
-            LD A,B
-            OR C
-            JR NZ,DELAY1
+            CALL DELAY
 
 BIT5_ON:
             LD A,0x10           ; bit 5
@@ -62,14 +57,19 @@ B_RTS_OFF:
             OUT (kSIOBConT3),A
 
             LD BC,$6666   ;~0.3 second delay
-DELAY2:
+            CALL DELAY
+            
+            JR Loop
+
+; INPUT: Loop count in BC
+DELAY:
             NOP
             DEC BC
             LD A,B
             OR C
-            JR NZ,DELAY2
+            JR NZ,DELAY
+            RET
 
-            JR Loop
 
             HALT
 
