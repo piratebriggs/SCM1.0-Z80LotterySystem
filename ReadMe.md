@@ -1,6 +1,6 @@
 # Small Computer Workshop (SCWorkshop.exe) plus SCMonitor
 
-This is a fork of [small-computer-monitor-v1-0](https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/) which adds a build configuration to support a vintage Z80 SBC designed by E&TS for a Lottery System.
+This is a fork of [small-computer-monitor-v1-0](https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/) which adds a build configuration to support a vintage Z80 SBC designed by [E&TS](http://www.ets-controls.co.uk/) for a Lottery System.
 
 More details to follow!
 
