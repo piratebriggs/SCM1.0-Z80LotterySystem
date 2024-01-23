@@ -1,5 +1,10 @@
-Small Computer Workshop (SCWorkshop.exe) plus SCMonitor
-=======================================================
+# Small Computer Workshop (SCWorkshop.exe) plus SCMonitor
+
+This is a fork of [small-computer-monitor-v1-0](https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/) which adds a build configuration to support a vintage Z80 SBC designed by E&TS for a Lottery System.
+
+More details to follow!
+
+## Original Description
 
 This software is designed to aid development of 8-bit retro computers.
 
@@ -23,27 +28,24 @@ older versions of Windows.
 Documentation for the Small Computer Monitor can be found at:
 www.scc.me.uk
 
-Bugs
-====
+## Bugs
 
 The most annoying bugs relate to the text editor, which does quite a
 few odd things. But after a while you get used to it!
 
 If you get Error 13 at start up it is probably due to your international 
-settings having a decimal character other than a period (“.”). The work 
+settings having a decimal character other than a period (ï¿½.ï¿½). The work 
 around is to change the Clock value in Definition.txt to an integer. 
-There is a Definition.txt file for each ‘Computer’ type in the Resources 
+There is a Definition.txt file for each ï¿½Computerï¿½ type in the Resources 
 folder.
 
-Limitations
-===========
+## Limitations
 
 The Z80 simulator is not complete. For example, it does not generate 
 a parity flag. However, the commonly used features are supported. 
 Some software will not run in the simulator because of this limitation.
 
-Tips
-====
+## Tips
 
 The program does not need to be installed, just run SCWorkshop.exe.
 
@@ -60,26 +62,25 @@ specified computer should manage rapid updates when in "Jog" mode.
 In "Run" mode there is no attempt to update most views, regardless
 of the computer's performance.
 
-Files and Folders
-=================
+## Files and Folders
 
-Folder: Output
+**Folder:** `Output`
 The assembler output files are written here.
 
-Folder: SCMonitor
+**Folder:** `SCMonitor`
 Small Computer Monitor source, object files, documentation, examples 
 and other support files.
 
-Folder: SCWorkshopProjects
+**Folder:** `SCWorkshopProjects`
 Sample projects for use with SCWorkshop.
 
-Folder: SCWorkshopResources
+**Folder:** `SCWorkshopResources`
 Support files for the Small Computer Workshop software.
 
-File: msvbvm60.dll
+**File:** `msvbvm60.dll`
 Support file for the Small Computer Workshop software.
 
-File: SCWorkshop.exe
+**File:** `SCWorkshop.exe`
 Main executable for the Small Computer Workshop software.
 
 
