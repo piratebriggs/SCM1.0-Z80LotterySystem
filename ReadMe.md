@@ -2,6 +2,8 @@
 
 This is a fork of [small-computer-monitor-v1-0](https://smallcomputercentral.com/small-computer-monitor/small-computer-monitor-v1-0/) which adds a build configuration to support a vintage Z80 SBC designed by [E&TS](http://www.ets-controls.co.uk/) for a Lottery System.
 
+In a pinch, a suitable eeprom can be burned using my [fork of an eeprom programmer for the Arduino Mega 2560](https://github.com/piratebriggs/eeprom2560). You'll need to use [hex2bin](https://hex2bin.sourceforge.net/) to convert `SCMonitor-v100-R1-Z80Lottery-08k-ROM.hex` to bin format before loading to the eeprom.
+
 More details to follow!
 
 ## Original Description
