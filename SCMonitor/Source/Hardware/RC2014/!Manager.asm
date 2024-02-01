@@ -12,6 +12,7 @@
 kSIO2:      .EQU 0x60           ;Base address of SIO/2 chip
 kPrtIn:     .EQU 0x15           ;General input port  (PIO Port B)
 kPrtOut:    .EQU 0x15           ;General output port (PIO Port B)
+kPIO_C:     .EQU 0x16           ;Memory Bank port  (PIO Port C)
 kPIO_M:     .EQU 0x17           ;General input port  (PIO Config)
 kPIO_CFG:	.EQU	0x80	; Active, Mode 0, A & B & C Outputs
 
@@ -27,6 +28,15 @@ kPIO_CFG:	.EQU	0x80	; Active, Mode 0, A & B & C Outputs
 
 ; Startup message
 szStartup:  .DB "Z80-Lottery",kNull
+
+PII_Initialise:
+            LD A,kPIO_CFG 		; Load PIO Config vakue
+            OUT (kPIO_M),A		; Set PIO Config
+            ; PORT C will now be set to 0x00 = Bank 0
+            LD A,0xF0 		    ; Select Bank F (1111)
+            OUT (kPIO_C),A  	; Write it out
+        	RET				    ; AND DONE
+PII_Initialise_SZ	.EQU	$-PII_Initialise	; SIZE OF ROUTINE
 
 
 ; Hardware initialise
@@ -44,9 +54,9 @@ szStartup:  .DB "Z80-Lottery",kNull
 Hardware_Initialise:
             XOR  A
             LD   (iHwFlags),A   ;Clear hardware flags
-; Init PIO
-            LD A,kPIO_CFG 		; Load PIO Config vakue
-            OUT (kPIO_M),A		; Set PIO Config
+; Init PIO - performed in Alpha.asm
+            ; LD A,kPIO_CFG 		; Load PIO Config vakue
+            ; OUT (kPIO_M),A		; Set PIO Config
 ; Look for SIO2 type 3 (lottery addressing scheme)
             CALL RC2014_SerialSIO2_Initialise_T3
             JR   NZ,@NoSIO2T3   ;Skip if SIO2 not found

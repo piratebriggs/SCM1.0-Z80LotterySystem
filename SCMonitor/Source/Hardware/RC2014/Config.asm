@@ -23,10 +23,10 @@ kROMTop:    .EQU 0x1F           ;Top of banked ROM (hi byte only)
 ; 64k RAM board set to start at 8k (not page enabled)
 #IF         BUILD = "R1"
 kConfMinor: .EQU '1'            ;Config: 1 to 9 = official, 0 = user
-kCode:      .EQU 0x8000         ;Typically 0x0000 or 0xE000
+kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
-kROMTop:    .EQU 0x9F           ;Top of banked ROM (hi byte only)
+kROMTop:    .EQU 0x1F           ;Top of banked ROM (hi byte only)
 #ENDIF
 
 ; Standard build: 16k ROM

@@ -289,8 +289,16 @@ ColdStrt:   DI                  ;Disable interrupts
 ; At the end of a sucessful self test the default output port is cleared 
 ; to zero, otherwise the default output port indicates the failure
 #IF         BUILD = "R1"
-            LD A,kPIO_CFG 		; Load PIO Config vakue
-            OUT (kPIO_M),A		; Set PIO Config
+            ; Need to init the PII in RAM as it will enable outputs on PORT C (And other ports)
+            ; And the weak pullup boot bank selection will be overwritten
+            ; Copy the code to a high ish address (0xA00)  so it can run from ROM or RAM
+            ; COPY ROUTINE TO UPPER RAM
+            LD	HL,PII_Initialise
+            LD	DE,$F000
+            LD	BC,PII_Initialise_SZ
+            LDIR
+        	CALL	$F000			; Init the PII/PIO
+;
 #INCLUDE    Monitor\Selftest.asm  ;Include self test functions
 #DEFINE     CUSTOM_SELFTEST
 #ENDIF
