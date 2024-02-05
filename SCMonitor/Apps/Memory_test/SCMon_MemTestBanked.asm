@@ -16,34 +16,54 @@
             .PROC Z80           ;SCWorkshop select processor
 
 Result:     .EQU 0x8070
-Start:      .EQU 0x8068
+Start:      .EQU 0x4000
 
             .ORG 0x8000
 
 
 Test:       
 
-; Test upper 32K of RAM
+; Test writing to two banks quickly
 
             LD   HL,Start      ;Start location
+            LD   C, 0x16
 
-@Upper:     LD   A,0x55         
+@Upper:     
+            LD   A, 0x55         
+            LD   B, 0x00
+            OUT  (C),B       ; Bank 0
             LD   (HL),A         ;Write test pattern
+
+            LD   A, 0xAA
+            LD   B, 0x10
+            OUT  (C),B       ; Bank 1
+            LD   (HL),A         ;Write test pattern
+
+            LD   A, 0x55         
+            LD   B, 0x00
+            OUT  (C),B       ; Bank 0
             CP   (HL)           ;Read back and compare
             JR   NZ,@HiEnd      ;Abort if not the same
-            LD   A,0xAA         ;second pattern
-            LD   (HL),A         ;Restore origianl contents
+
+            LD   A, 0xAA
+            LD   B, 0x10
+            OUT  (C),B       ; Bank 1
             CP   (HL)           ;Read back and compare
             JR   NZ,@HiEnd      ;Abort if not the same
+
             INC  HL             ;Point to next location
             LD   A,H
-            CP   0xfc           ;Have we finished?
+            CP   0x7f           ;Have we finished?
             JR   NZ,@Upper
 
 @HiEnd:     LD   (Result),HL    ;Store current address
             LD   A,H
-            CP   0xfc           ;Pass?
+            CP   0x7f           ;Pass?
             JR   NZ,@Failed     ;No, so go report failure
+
+
+            LD   A, 0xF0
+            OUT  (0x16),A       ; Bank F
 
             LD   DE,@Pass       ;Pass message
             LD   C,6            ;API 6
@@ -61,7 +81,10 @@ Test:
 
             RET
 
-@Failed:    LD   DE,@Fail       ;Fail message
+@Failed:    LD   A, 0xF0
+            OUT  (0x16),A       ; Bank F
+
+            LD   DE,@Fail       ;Fail message
             LD   C,6            ;API 6
             RST  0x30           ;  = Output message at DE
             RET
