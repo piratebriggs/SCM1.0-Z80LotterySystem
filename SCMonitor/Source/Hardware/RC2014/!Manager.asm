@@ -10,8 +10,8 @@
 
 ; Global constants
 kSIO2:      .EQU 0x60           ;Base address of SIO/2 chip
-kPrtIn:     .EQU 0x15           ;General input port  (PIO Port B)
-kPrtOut:    .EQU 0x15           ;General output port (PIO Port B)
+kPrtIn:     .EQU 0x14           ;General input port  (PIO Port A)
+kPrtOut:    .EQU 0x14           ;General output port (PIO Port A)
 kPIO_C:     .EQU 0x16           ;Memory Bank port  (PIO Port C)
 kPIO_M:     .EQU 0x17           ;General input port  (PIO Config)
 kPIO_CFG:	.EQU	0x80	; Active, Mode 0, A & B & C Outputs
@@ -33,7 +33,7 @@ PII_Initialise:
             LD A,kPIO_CFG 		; Load PIO Config vakue
             OUT (kPIO_M),A		; Set PIO Config
             ; PORT C will now be set to 0x00 = Bank 0
-            LD A,0xF0 		    ; Select Bank F (1111)
+            LD A,0x00 		    ; Select Bank 0 (0000)
             OUT (kPIO_C),A  	; Write it out
         	RET				    ; AND DONE
 PII_Initialise_SZ	.EQU	$-PII_Initialise	; SIZE OF ROUTINE
