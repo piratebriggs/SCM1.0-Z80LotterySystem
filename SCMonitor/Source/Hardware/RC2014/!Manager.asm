@@ -33,7 +33,7 @@ PII_Initialise:
             LD A,kPIO_CFG 		; Load PIO Config vakue
             OUT (kPIO_M),A		; Set PIO Config
             ; PORT C will now be set to 0x00 = Bank 0
-            LD A,0x00 		    ; Select Bank 0 (0000)
+            LD A,0xF0 		    ; Select Bank F (1111)
             OUT (kPIO_C),A  	; Write it out
         	RET				    ; AND DONE
 PII_Initialise_SZ	.EQU	$-PII_Initialise	; SIZE OF ROUTINE
