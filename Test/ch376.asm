@@ -16,37 +16,39 @@ kSIOBDatT3: .EQU 0x62        ;I/O address of data register B
         .CODE
         .ORG  0x8000
 
+        LD c,0x16
+
         ld a,0xc0
         out (0x17),a  ; Mode
         ld a,0x80
         out (0x15),a  ; CS#=1
         ld a,7
-        out (0x16),a  ; 1, 1, 1
+        out (c),a  ; 1, 1, 1
         ld a,00
         out (0x15),a  ; CS#=0
 
         ld a,06
         out (0x14),a  ; data=06
         ld a,7
-        out (0x16),a  ; a0=1
+        out (c),a  ; a0=1
         ld a,6
-        out (0x16),a  ; wr#=0
+        out (c),a  ; wr#=0
         ld a,7
-        out (0x16),a  ; wr#=1
+        out (c),a  ; wr#=1
 
         ld a,0x55
         out (0x14),a  ; data = 55
         ld a,3
-        out (0x16),a  ; a0=0
+        out (c),a  ; a0=0
         ld a,2
-        out (0x16),a  ; wr = 0
+        out (c),a  ; wr = 0
         ld a,3
-        out (0x16),a  ; wr = 1
+        out (c),a  ; wr = 1
 
         ld a,1
-        out (0x16),a  ; rd = 0
+        out (c),a  ; rd = 0
         ld a,3
-        out (0x16),a  ; rd = 1
+        out (c),a  ; rd = 1
         in a,(0x14)
         ld hl,0x8100
         ld (hl),a
@@ -54,56 +56,65 @@ kSIOBDatT3: .EQU 0x62        ;I/O address of data register B
         ld a,06
         out (0x14),a  ; data=06
         ld a,7
-        out (0x16),a  ; a0=1
+        out (c),a  ; a0=1
         ld a,6
-        out (0x16),a  ; wr#=0
+        out (c),a  ; wr#=0
         ld a,7
-        out (0x16),a  ; wr#=1
+        out (c),a  ; wr#=1
 
         ld a,0xf0
         out (0x14),a  ; data = aa
         ld a,3
-        out (0x16),a  ; a0=0
+        out (c),a  ; a0=0
         ld a,2
-        out (0x16),a  ; wr = 0
+        out (c),a  ; wr = 0
         ld a,3
-        out (0x16),a  ; wr = 1
+        out (c),a  ; wr = 1
         
         ld a,1
-        out (0x16),a  ; rd = 0
+        out (c),a  ; rd = 0
         ld a,3
-        out (0x16),a  ; rd = 1
+        out (c),a  ; rd = 1
         in a,(0x14)
         ld hl,0x8101
         ld (hl),a
 
-
         ld a,7
-        out (0x16),a  ; a0=1
+        out (c),a  ; a0=1
         ld a,5
-        out (0x16),a  ; rd = 0
+        out (c),a  ; rd = 0
         ld a,7
-        out (0x16),a  ; rd = 1
+        out (c),a  ; rd = 1
         in a,(0x14)
         ld hl,0x8102
         ld (hl),a
 
+        ld a,01
+        out (0x14),a  ; data=01
         ld a,7
-        out (0x16),a  ; a0=1
-        ld a,5
-        out (0x16),a  ; rd = 0
+        out (c),a  ; a0=1
+        ld a,6
+        out (c),a  ; wr#=0
         ld a,7
-        out (0x16),a  ; rd = 1
+        out (c),a  ; wr#=1
+      
+        ld a,3
+        out (c),a  ; a0=0
+        ld a,1
+        out (c),a  ; rd = 0
+        ld a,3
+        out (c),a  ; rd = 1
         in a,(0x14)
         ld hl,0x8103
         ld (hl),a
 
+
         ld a,7
-        out (0x16),a  ; a0=1
+        out (c),a  ; a0=1
         ld a,5
-        out (0x16),a  ; rd = 0
+        out (c),a  ; rd = 0
         ld a,7
-        out (0x16),a  ; rd = 1
+        out (c),a  ; rd = 1
         in a,(0x14)
         ld hl,0x8104
         ld (hl),a
