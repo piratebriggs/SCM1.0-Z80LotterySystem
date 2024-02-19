@@ -289,15 +289,15 @@ ColdStrt:   DI                  ;Disable interrupts
 ; At the end of a sucessful self test the default output port is cleared 
 ; to zero, otherwise the default output port indicates the failure
 #IF         BUILD = "R1"
-            ; Need to init the PII in RAM as it will enable outputs on PORT C (And other ports)
-            ; And the weak pullup boot bank selection will be overwritten
+            ; Need to init the PII in RAM as it will enable outputs on PORT B (And other ports)
+            ; And the weak pullup/down boot bank selection will be overwritten
             ; Copy the code to a high ish address (0xA00)  so it can run from ROM or RAM
             ; COPY ROUTINE TO UPPER RAM
             LD	HL,PII_Initialise
             LD	DE,$F000
             LD	BC,PII_Initialise_SZ
             LDIR
-        	CALL	$F000			; Init the PII/PIO
+        	CALL	$F000			; Init the PII
 ;
 #INCLUDE    Monitor\Selftest.asm  ;Include self test functions
 #DEFINE     CUSTOM_SELFTEST
@@ -325,10 +325,10 @@ ColdStrt:   DI                  ;Disable interrupts
             LD   (iMemTop),HL   ;Set top of free memory
 ; Initialise ports module for default I/O ports
 ; This will turn off all outputs at the default output port (LEDs)
-            LD   A,kPrtOut      ;Default output port address
-            CALL PrtOInit       ;Initialise output port
-            LD   A,kPrtIn       ;Default input port address
-            CALL PrtIInit       ;Initialise input port
+            ; LD   A,kPrtOut      ;Default output port address
+            ; CALL PrtOInit       ;Initialise output port
+            ; LD   A,kPrtIn       ;Default input port address
+            ; CALL PrtIInit       ;Initialise input port
 ; Initialise hardware and set up required jump table entries
 ; This may indicate an error at the default output port (LEDs)
             CALL Hardware_Initialise

@@ -10,11 +10,14 @@
 
 ; Global constants
 kSIO2:      .EQU 0x60           ;Base address of SIO/2 chip
-kPrtIn:     .EQU 0x14           ;General input port  (PIO Port A)
-kPrtOut:    .EQU 0x14           ;General output port (PIO Port A)
-kPIO_C:     .EQU 0x16           ;Memory Bank port  (PIO Port C)
-kPIO_M:     .EQU 0x17           ;General input port  (PIO Config)
-kPIO_CFG:	.EQU	0x80	; Active, Mode 0, A & B & C Outputs
+kPrtIn:     .EQU 0x15           ;General input port  (PII Port B ???)
+kPrtOut:    .EQU 0x15           ;General output port (PII Port B bits 4-6)
+kPII_A:     .EQU 0x14           ;PII Port A
+kPII_B:     .EQU 0x15           ;PII Port B
+kPII_C:     .EQU 0x16           ;PII Port C
+kPII_M:     .EQU 0x17           ;PII Config
+kPII_CFG:	.EQU 0xC0       	;Active, GRP A: Mode 2 (Bidi), Port B & PC0-2 Outputs
+kPII_CInit: .EQU 0x07           ;Set PC0-2 to 1
 
 ; Include device modules
 #INCLUDE    Hardware\RC2014\SerialSIO2.asm
@@ -30,11 +33,12 @@ kPIO_CFG:	.EQU	0x80	; Active, Mode 0, A & B & C Outputs
 szStartup:  .DB "Z80-Lottery",kNull
 
 PII_Initialise:
-            LD A,kPIO_CFG 		; Load PIO Config vakue
-            OUT (kPIO_M),A		; Set PIO Config
-            ; PORT C will now be set to 0x00 = Bank 0
-            LD A,0xF0 		    ; Select Bank F (1111)
-            OUT (kPIO_C),A  	; Write it out
+            LD A,kPII_CFG 		; Load PII Config vakue
+            OUT (kPII_M),A		; Set PII Config
+            LD A,kPII_BInit	    ; 
+            OUT (kPII_B),A  	; Write it out
+            LD A,kPII_CInit	    ; 
+            OUT (kPII_C),A  	; Write it out
         	RET				    ; AND DONE
 PII_Initialise_SZ	.EQU	$-PII_Initialise	; SIZE OF ROUTINE
 
@@ -45,7 +49,7 @@ PII_Initialise_SZ	.EQU	$-PII_Initialise	; SIZE OF ROUTINE
 ;             IX IY I AF' BC' DE' HL' preserved
 ; Identify and initialise console devices:
 ;   Console device 1 = Serial device at $80 (SIO port A or ACIA #1)
-;   Console device 2 = Serial device at $80 (SIO port B)
+;   Console device 2 = Serial device at $80 (SIO port B)`
 ;   Console device 3 = Serial device at $40 (ACIA #2)
 ; Sets up hardware device flags:
 ;   Bit 0 = Serial 6850 ACIA #1 detected
@@ -54,9 +58,6 @@ PII_Initialise_SZ	.EQU	$-PII_Initialise	; SIZE OF ROUTINE
 Hardware_Initialise:
             XOR  A
             LD   (iHwFlags),A   ;Clear hardware flags
-; Init PIO - performed in Alpha.asm
-            ; LD A,kPIO_CFG 		; Load PIO Config vakue
-            ; OUT (kPIO_M),A		; Set PIO Config
 ; Look for SIO2 type 3 (lottery addressing scheme)
             CALL RC2014_SerialSIO2_Initialise_T3
             JR   NZ,@NoSIO2T3   ;Skip if SIO2 not found
