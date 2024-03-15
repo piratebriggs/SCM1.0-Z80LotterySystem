@@ -1,5 +1,5 @@
 ; **********************************************************************
-; **  Build Small Computer Monitor Configuration R# (RC2014 32k ROM)  **
+; **  Build Small Computer Monitor Configuration R# (Z80-Lottery)  **
 ; **********************************************************************
 
 #IFNDEF     BUILD

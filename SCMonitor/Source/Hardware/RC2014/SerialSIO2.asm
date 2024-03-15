@@ -30,10 +30,10 @@
 ; 0x83   Channel B data registers (read and write)
 ;
 ; Lottery addresses for SIO/2:
-; 0x81   Channel A control registers (read and write)
-; 0x80   Channel A data registers (read and write)
-; 0x83   Channel B control registers (read and write)
-; 0x82   Channel B data registers (read and write)
+; 0x61   Channel A control registers (read and write)
+; 0x60   Channel A data registers (read and write)
+; 0x63   Channel B control registers (read and write)
+; 0x62   Channel B data registers (read and write)
 ;
 ; Too complex to reproduce technical info here. See SIO datasheet
 
@@ -226,7 +226,7 @@ RC2014_SerialSIO2B_OutputChar_T2:
 ; **  Type 3 (Lottery addressing scheme)                              **
 ; **********************************************************************
 
-; RC2014 type 3 serial SIO/2 initialise
+; Lottery type 3 serial SIO/2 initialise
 ;   On entry: No parameters required
 ;   On exit:  Z flagged if device is found and initialised
 ;             AF BC DE HL not specified
@@ -249,7 +249,7 @@ RC2014_SerialSIO2_Initialise_T3:
             JP   RC2014_SerialSIO2_IniSend
 
 
-; RC2014 type 2 serial SIO/2 channel A & B input character
+; Lottery type 3 serial SIO/2 channel A & B input character
 ;   On entry: No parameters required
 ;   On exit:  A = Character input from the device
 ;             NZ flagged if character input
@@ -268,7 +268,7 @@ RC2014_SerialSIO2B_InputChar_T3:
             RET
 
 
-; RC2014 type 2 serial SIO/2 channel A & B output character
+; Lottery type 3 serial SIO/2 channel A & B output character
 ;   On entry: A = Character to be output to the device
 ;   On exit:  If character output successful (eg. device was ready)
 ;               NZ flagged and A != 0

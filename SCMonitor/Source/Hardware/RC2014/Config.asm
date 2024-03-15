@@ -1,5 +1,5 @@
 ; **********************************************************************
-; **  Config: R* = RC2014                       by Stephen C Cousins  **
+; **  Config: R* = Lottery                      by Stephen C Cousins  **
 ; **********************************************************************
 
 ; Target hardware
@@ -8,53 +8,37 @@ kHardID:    .EQU 3              ;Hardware ID number
 
 ; Build variations:
 
-; Custom build for RC2014 hardware
-#IF         BUILD = "R0"
-kConfMinor: .EQU '0'            ;Config: 1 to 9 = official, 0 = user
+; Standard build: 8k ROM. Bank F selected
+#IF         BUILD = "R1"
+kConfMinor: .EQU '1'            ;Config: 1 to 9 = official, 0 = user
 kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
 kROMTop:    .EQU 0x1F           ;Top of banked ROM (hi byte only)
-#ENDIF
-
-; Standard build: 8k ROM
-; All official RC2014 systems can run this
-; Paged ROM board set for 8k page size
-; 64k RAM board set to start at 8k (not page enabled)
-#IF         BUILD = "R1"
-kConfMinor: .EQU '1'            ;Config: 1 to 9 = official, 0 = user
-kCode:      .EQU 0x8000         ;Typically 0x0000 or 0xE000
-kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
-kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
-kROMTop:    .EQU 0x9F           ;Top of banked ROM (hi byte only)
 kPII_BInit: .EQU 0x8F           ;CH376_CS#=1, Bank F (1xxx 1111)
 #ENDIF
 
-; Standard build: 16k ROM
-; Paged ROM board set for 16k page size
-; 64k RAM board set to start at 16k (not page enabled)
+; Standard build: 16k ROM. Bank F selected
 #IF         BUILD = "R2"
 kConfMinor: .EQU '2'            ;Config: 1 to 9 = official, 0 = user
 kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
 kROMTop:    .EQU 0x3F           ;Top of banked ROM (hi byte only)
+kPII_BInit: .EQU 0x8F           ;CH376_CS#=1, Bank F (1xxx 1111)
 #ENDIF
 
-; Standard build: 32k ROM 
-; Paged ROM board set for 32k page size
-; 64k RAM board set to page enabled
+; 8k RAM. Bank 0 selected
 #IF         BUILD = "R3"
 kConfMinor: .EQU '3'            ;Config: 1 to 9 = official, 0 = user
-kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000
+kCode:      .EQU 0x8000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
-kROMTop:    .EQU 0x7F           ;Top of banked ROM (hi byte only)
+kROMTop:    .EQU 0x9F           ;Top of banked ROM (hi byte only)
+kPII_BInit: .EQU 0x8F           ;CH376_CS#=1, Bank F (1xxx 0000)
 #ENDIF
 
-; Distribution build: 16k ROM (with BASIC and CP/M loader)
-; Paged ROM board set for 32k page size
-; 64k RAM board set to page enabled
+; TBC
 #IF         BUILD = "R4"
 kConfMinor: .EQU '4'            ;Config: 1 to 9 = official, 0 = user
 kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000

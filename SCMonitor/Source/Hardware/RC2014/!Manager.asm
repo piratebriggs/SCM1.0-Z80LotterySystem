@@ -1,6 +1,6 @@
 ; **********************************************************************
 ; **  Hardware Manager                          by Stephen C Cousins  **
-; **  Hardware: RC2014                                                **
+; **  Hardware: Lottery                                                **
 ; **********************************************************************
 
 ; This module is responsible for:
@@ -156,8 +156,8 @@ Hardware_Devices:
             BIT  1,(HL)         ;Serial SIO/2 present?
             CALL NZ,OutputZString ;Yes, so list it
             RET
-@szHwSIO2:  .DB  "1 = Z80 SIO port A (@80)",kNewLine
-            .DB  "2 = Z80 SIO port B (@82)",kNewLine,kNull
+@szHwSIO2:  .DB  "1 = Z80 SIO port A (@60)",kNewLine
+            .DB  "2 = Z80 SIO port B (@62)",kNewLine,kNull
 
 
 

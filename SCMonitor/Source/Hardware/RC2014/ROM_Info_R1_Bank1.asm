@@ -2,7 +2,7 @@
 ; **  ROM info: R1-Bank1                        by Stephen C Cousins  **
 ; **********************************************************************
 
-; Standard 8K ROM suitable for all RC2014 systems
+; Standard 8K ROM
 ; Requires:
 ;   ROM from 0x0000 to 0x1FFF
 ;   RAM from 0x8000 to 0xFFFF

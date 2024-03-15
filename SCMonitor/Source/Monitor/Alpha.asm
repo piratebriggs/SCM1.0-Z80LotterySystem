@@ -288,7 +288,7 @@ ColdStrt:   DI                  ;Disable interrupts
 ; This indicates status on the default output port (LEDs)
 ; At the end of a sucessful self test the default output port is cleared 
 ; to zero, otherwise the default output port indicates the failure
-#IF         BUILD = "R1"
+#IF         BUILD = "R*"
             ; Need to init the PII in RAM as it will enable outputs on PORT B (And other ports)
             ; And the weak pullup/down boot bank selection will be overwritten
             ; Copy the code to a high ish address (0xA00)  so it can run from ROM or RAM
