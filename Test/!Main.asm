@@ -1,7 +1,9 @@
-; #INCLUDE    Test.asm
-;#INCLUDE   beeper.asm
+#INCLUDE    Test.asm
+; #INCLUDE   beeper.asm
 
-#INCLUDE    ch376.asm
+; #INCLUDE    ch376.asm
+
+
 
 
 
