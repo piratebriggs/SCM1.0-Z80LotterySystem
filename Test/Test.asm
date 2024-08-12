@@ -17,81 +17,137 @@ CH_CMD:	.EQU	$71		; CH376 Command Port
 
 ColdStrt:   DI                  ;Disable interrupts
             LD   SP, $FFFF      ;Initialise system stack pointer
-            LD A,PIO_CFG 		; 
-            OUT (PIO_M),A		; 
+            LD   A,PIO_CFG 		; 
+            OUT  (PIO_M),A		; 
 
             LD   C,kSIOAConT3   ;SIO/2 channel A control port
-            CALL RC2014_SerialSIO2_IniSend
+            call RC2014_SerialSIO2_IniSend
             LD   C,kSIOBConT3   ;SIO/2 channel B control port
-            CALL RC2014_SerialSIO2_IniSend
+            call RC2014_SerialSIO2_IniSend
 
 Loop:
-            LD A,$08            ; flash
-            OUT (PIO_C),A		; Set port A 
-            CALL medium_delay
-            LD A,$00            ; all off
-            OUT (PIO_C),A		; Set port A 
-            CALL medium_delay
+            LD   A,$08            ; flash
+            OUT  (PIO_C),A		; Set port A 
+            call medium_delay
+            LD   A,$00            ; all off
+            OUT  (PIO_C),A		; Set port A 
+            call medium_delay
+
+            LD   DE,szNL   ;
+            call OutputZString  ;Output message at DE
 
             LD   DE,szStartup   ;
-            CALL OutputZString  ;Output message at DE
+            call OutputZString  ;Output message at DE
 
 CH_Reset:
-            ld a, RESET_ALL
-            OUT (CH_CMD),A      ; send
-            CALL medium_delay
+            ld   a, RESET_ALL
+            call CH_Send_Cmd    ; send
+            call CH_Busy_Wait
 
+            call CH_Exists
 
 CH_Host_Mode:
-            ld a, SET_USB_MODE
-            OUT (CH_CMD),A      ; send
-            ld a, 6
-            OUT (CH_DAT),A      ; send
-            CALL short_delay
-            IN A,(CH_DAT)       ; read
-            CALL PrintHexByte
-            cp CMD_RET_SUCCESS
-            jr z, CH_Disk_Conect
-            JP Loop
+            ld   a, SET_USB_MODE
+            call CH_Send_Cmd    ; send
+            ld   a, 6
+            call CH_Send_Data
+            call CH_Busy_Wait
+            IN   A,(CH_DAT)       ; read
+            call PrintHexByte
+            cp   CMD_RET_SUCCESS
+            jr   z, CH_Disk_Conect
+            JP   Loop
 
 
 CH_Disk_Conect:
-            ld a, DISK_CONNECT
-            OUT (CH_CMD),A      ; send
+            ld   a, DISK_CONNECT
+            call CH_Send_Cmd    ; send
             call CH_Chk_Success
-            jr z, CH_Disk_Mount
-            JP Loop
+            jr   z, CH_Disk_Mount
+            LD   DE,szErrDisk   ;
+            call OutputZString  ;Output message at DE
+            JP   Loop
 
 CH_Disk_Mount:
-        	ld a, DISK_MOUNT
-            OUT (CH_CMD),A      ; send
+        	ld   a, DISK_MOUNT
+            call CH_Send_Cmd    ; send
             call CH_Chk_Success
-            jr z, CH_Exists
-            JP Loop
+            jr   z, CH_OpenFile
+            LD   DE,szErrDisk   ;
+            call OutputZString  ;Output message at DE
+            JP   Loop
+
+CH_OpenFile:
+        	ld   a, SET_FILE_NAME
+            call CH_Send_Cmd    ; send
+            LD   DE,szBootBin   ;
+CH_OpenFile1:
+            LD   A,(DE)         ;Get character from string
+            call CH_Send_Data     ;Send char (inc NULL)
+            INC  DE             ;Point to next character
+            OR   A              ;Null terminator?
+            JR   Z,CH_OpenFile2 ;Yes, so we've finished
+            JR   CH_OpenFile1   ;Go process next character
+CH_OpenFile2:
+        	ld   a, FILE_OPEN
+            call CH_Send_Cmd    ; send
+            call CH_Chk_Success
+            jr   z, CH_FileFound
+            LD   DE,szErrFile   ;
+            call OutputZString  ;Output message at DE
+            JP   Loop
+
+CH_FileFound:
+            LD   A,$0F            ; flash
+            OUT  (PIO_C),A		; Set port A 
+            call medium_delay
+            LD   A,$00            ; all off
+            OUT  (PIO_C),A		; Set port A 
+            call medium_delay
+
+            JP   CH_FileFound
 
 CH_Exists:
-            LD A,$01           ; Get Ver
-            OUT (CH_CMD),A      ; send
-            IN A,(CH_DAT)       ; read
-            CALL PrintHexByte
+            LD   A,GET_IC_VER       ; Get Ver
+            call CH_Send_Cmd        ; send
+            IN   A,(CH_DAT)         ; read
+            call PrintHexByte
 
-            LD A,$06           ; CHK
-            OUT (CH_CMD),A      ; send
-            LD A,$03           ; data
-            OUT (CH_CMD),A      ; send
-            IN A,(CH_DAT)       ; read
-            CALL PrintHexByte
+            LD   A,CHECK_EXIST      ; CHK
+            call CH_Send_Cmd        ; send
+            LD   A,$03              ; data
+            call CH_Send_Data
+            IN   A,(CH_DAT)         ; read
+            call PrintHexByte
+            ret
 
-
-            JP Loop
-
+CH_Busy_Wait:
+            IN   A,(CH_CMD)         ; read
+            BIT  CHBZ,A             ; Busy?
+            JR   NZ,CH_Busy_Wait
+            ret
 
 CH_Chk_Success:
-            ld a, GET_STATUS
-            OUT (CH_CMD),A      ; send
-            IN A,(CH_DAT)       ; read
+            call CH_Busy_Wait
+            ld   a, GET_STATUS
+            OUT  (CH_CMD),A         ; send
+            ld   a, '?'
+            call OutputChar_T3
+            IN   A,(CH_DAT)         ; read
             call PrintHexByte
-            cp USB_INT_SUCCESS
+            cp   USB_INT_SUCCESS
+            ret
+
+CH_Send_Cmd:
+            LD   DE,szNL            ; New Line
+            call OutputZString      ; Output message at DE
+            call PrintHexByte
+            OUT (CH_CMD),A          ; send
+            ret
+
+CH_Send_Data:
+            call PrintHexByte
+            OUT  (CH_DAT),A         ; send
             ret
 
 ; RC2014 serial SIO/2 write initialisation data 
@@ -147,7 +203,7 @@ Next:       LD   A,(DE)         ;Get character from string
             INC  DE             ;Point to next character
             OR   A              ;Null terminator?
             JR   Z,Finished     ;Yes, so we've finished
-            CALL OutputChar_T3  ;Output character
+            call OutputChar_T3  ;Output character
             JR   Next           ;Go process next character
 Finished:   POP  AF
             RET
@@ -161,53 +217,54 @@ PrintHexByte:
             RRA                 ;  botom four bits..
             RRA
             RRA
-            CALL StrWrHexNibble
+            call PrintHexNibble
             POP  AF
-            CALL StrWrHexNibble
+            call PrintHexNibble
             RET
 
 
-; String: Write hex nibble to string buffer
+; Write hex nibble
 ;   On entry: A = Hex nibble
 ;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
-StrWrHexNibble:
+PrintHexNibble:
             PUSH AF
-            AND $0F           ;Mask off nibble
+            AND  $0F           ;Mask off nibble
             CP   $0A           ;Nibble > 10 ?
             JR   C,Skip        ;No, so skip
             ADD  A,7            ;Yes, so add 7
 Skip:       ADD  A,$30         ;Add ASCII '0'
-            CALL OutputChar_T3  ;Write character
+            call OutputChar_T3  ;Write character
             POP  AF
             RET
 
 long_delay:
-	ld bc, 65000
-	jr delay
+	        ld   bc, 65000
+	        jr   delay
 medium_delay:
-	ld bc, 45000
-	jr delay
+	        ld   bc, 45000
+	        jr   delay
 short_delay:
-	ld bc, 100
+	        ld   bc, 200
 ; INPUT: Loop count in BC
 delay:
             NOP
-            DEC BC
-            LD A,B
-            OR C
-            JR NZ,delay
+            DEC  BC
+            LD   A,B
+            OR   C
+            JR   NZ,delay
             RET
 
             HALT
 
-kNull       .EQU 0              ;Null character/byte (0x00)
-kLinefeed:  .EQU 10             ;Line feed character (0x0A)
-kReturn:    .EQU 13             ;Return character (0x0D)
 
 kSIOTxRdy:  .EQU 2              ;Transmit data empty bit number
+CHBZ:       .EQU 4              ;CH376 Busy Flag
 
-szStartup:  .DB "Lot!",kReturn,kLinefeed,0
-
+szNL:       .DB 13,10,0
+szStartup:  .DB "Z80-Lottery",13,10,0
+szErrDisk:  .DB "Disk?",13,10,0
+szErrFile:  .DB "File?",13,10,0
+szBootBin:  .DB "/BOOT.BIN",0
 
 GET_IC_VER: .equ $01
 SET_BAUDRATE: .equ $02
@@ -260,6 +317,7 @@ ERR_BPB_ERROR: .equ $A1
 ERR_DISK_FULL: .equ $B1
 ERR_FDT_OVER: .equ $B2
 ERR_FILE_CLOSE: .equ $B4
-
+THE_END:
+            .FILL $1000-THE_END
             .END
 
