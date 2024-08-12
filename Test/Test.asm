@@ -95,39 +95,19 @@ SIOIniEnd:
 
 ; Lottery type 3 serial SIO/2 channel A & B output character
 ;   On entry: A = Character to be output to the device
-;   On exit:  If character output successful (eg. device was ready)
-;               NZ flagged and A != 0
-;             If character output failed (eg. device busy)
-;               Z flagged and A = Character to output
+;   On exit:  NZ flagged and A != 0
 ;             BC DE HL IX IY I AF' BC' DE' HL' preserved
 OutputChar_T3:
             PUSH BC
-            LD   C,kSIOAConT3   ;SIO control register
+Wait1:      LD   C,kSIOAConT3   ;SIO control register
             IN   B,(C)          ;Read SIO control register
             BIT  kSIOTxRdy,B    ;Transmit register full?
+            JR   Z,Wait1
             POP  BC
-            RET  Z              ;Return Z as character not output
             OUT  (kSIOADatT3),A ;Write data byte
             OR   $FF           ;Return success A=0xFF and NZ flagged
             RET
 
-; Console output: Output character to console output device
-;   On entry: A = Character to output
-;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
-; This is the only place the actual new line codes (eg. CR/LF) are used
-OutputChar:
-            PUSH AF
-            CP   kNewLine       ;New line character?
-            JR   NZ,NotNL      ;No, so skip
-            LD   A,kReturn      ;Yes, so output physical new line
-Wait1:     CALL OutputChar_T3       ;  to console..
-            JR   Z,Wait1
-            LD   A,kLinefeed
-NotNL:
-Wait2:     CALL OutputChar_T3       ;Output character to console
-            JR   Z,Wait2
-Exit:      POP  AF
-            RET
 
 ; Console output: Output a zero (null) terminated string
 ;   On entry: DE= Start address of string
@@ -137,13 +117,13 @@ Exit:      POP  AF
 ; Supports \n for new line
 OutputZString:
             PUSH AF
-Next:      LD   A,(DE)         ;Get character from string
+Next:       LD   A,(DE)         ;Get character from string
             INC  DE             ;Point to next character
             OR   A              ;Null terminator?
-            JR   Z,Finished    ;Yes, so we've finished
-            CALL OutputChar     ;Output character
-            JR   Next          ;Go process next character
-Finished:  POP  AF
+            JR   Z,Finished     ;Yes, so we've finished
+            CALL OutputChar_T3  ;Output character
+            JR   Next           ;Go process next character
+Finished:   POP  AF
             RET
 
 PRINT8:
@@ -178,17 +158,15 @@ DELAY:
             JR NZ,DELAY
             RET
 
-
             HALT
 
 kNull       .EQU 0              ;Null character/byte (0x00)
-kNewLine    .EQU 5              ;New line character (0x05)
 kLinefeed:  .EQU 10             ;Line feed character (0x0A)
 kReturn:    .EQU 13             ;Return character (0x0D)
 
 kSIOTxRdy:  .EQU 2              ;Transmit data empty bit number
 
-szStartup:  .DB "Z80-Lottery",kNewLine,0
+szStartup:  .DB "Z80-Lottery!",kReturn,kLinefeed,0
 
-               .END
+            .END
 
