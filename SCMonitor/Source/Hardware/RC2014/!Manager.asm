@@ -10,14 +10,15 @@
 
 ; Global constants
 kSIO2:      .EQU 0x60           ;Base address of SIO/2 chip
-kPrtIn:     .EQU 0x15           ;General input port  (PII Port B ???)
-kPrtOut:    .EQU 0x15           ;General output port (PII Port B bits 4-6)
+kPrtIn:     .EQU 0x16           ;General input port  (PII Port C ???)
+kPrtOut:    .EQU 0x16           ;General output port (PII Port C bits 0-3)
 kPII_A:     .EQU 0x14           ;PII Port A
 kPII_B:     .EQU 0x15           ;PII Port B
 kPII_C:     .EQU 0x16           ;PII Port C
 kPII_M:     .EQU 0x17           ;PII Config
-kPII_CFG:	.EQU 0xC0       	;Active, GRP A: Mode 2 (Bidi), Port B & PC0-2 Outputs
-kPII_CInit: .EQU 0x07           ;Set PC0-2 to 1
+kPII_CFG:	.EQU 0x82       	;Active, Active, Mode 0, A & C Outputs. B Left as Input
+kPII_BInit: .EQU 0x00           ;
+kPII_CInit: .EQU 0x00           ;
 
 ; Include device modules
 #INCLUDE    Hardware\RC2014\SerialSIO2.asm
@@ -35,10 +36,10 @@ szStartup:  .DB "Z80-Lottery",kNull
 PII_Initialise:
             LD A,kPII_CFG 		; Load PII Config vakue
             OUT (kPII_M),A		; Set PII Config
-            LD A,kPII_BInit	    ; 
-            OUT (kPII_B),A  	; Write it out
-            LD A,kPII_CInit	    ; 
-            OUT (kPII_C),A  	; Write it out
+            ;LD A,kPII_BInit	    ; 
+            ;OUT (kPII_B),A  	; Write it out
+            ;LD A,kPII_CInit	    ; 
+            ;OUT (kPII_C),A  	; Write it out
         	RET				    ; AND DONE
 PII_Initialise_SZ	.EQU	$-PII_Initialise	; SIZE OF ROUTINE
 

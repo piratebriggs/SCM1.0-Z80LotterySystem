@@ -12,8 +12,8 @@
 
 ;#DEFINE    BUILD L1            ;LiNC80 SBC1 standard 32k ROM
 
-;#DEFINE     BUILD R1           ;Lottery 08K ROM
-#DEFINE    BUILD R2            ;Lottery 16K ROM
+#DEFINE     BUILD R1           ;Lottery 08K ROM
+;#DEFINE    BUILD R2            ;Lottery 16K ROM
 ;#DEFINE    BUILD R3            ;
 ;#DEFINE    BUILD R4            ;
 

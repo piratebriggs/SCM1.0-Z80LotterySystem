@@ -29,19 +29,15 @@
 
 ; Flash LEDs in turn to show we get as far as running code
 Selftest:   LD   DE,1           ;Prepared for delay loop
-            LD   B,0b00010000   ;First bit to write to LEDs
-@Loop1:     IN   A,(kPrtOut)    ;Read Port
-            AND  0b10001111     ;Mask off 3 bits
-            OR   B              ;Set bits
-            OUT  (kPrtOut),A    ;Write to LEDs
+            LD   A,E            ;First byte to write to LEDs = 0x01
+@Loop1:     OUT  (kPrtOut),A    ;Write to LEDs
             LD   HL,0xE1C0      ;Set delay time (approx 8000 loops)
 @Delay1:    ADD  HL,DE          ;Delay loop increments HL until
             JR   NC,@Delay1     ;  it reaches zero
-            RLC  B              ;Rotate LED bit left
+            RLCA                ;Rotate LED bit left
             JR   NC,@Loop1      ;Repeat until last LED cleared
-            IN   A,(kPrtOut)
-            AND  0b10001111     ;Clear 3 bits
-            OUT  (kPrtOut),A    ;Write it out
+            XOR  A              ;Clear A
+            OUT  (kPrtOut),A    ;All LEDs off
 
 ; Very brief RAM test
             LD   HL,0xFFFF      ;Location to be tested
@@ -74,9 +70,8 @@ Selftest:   LD   DE,1           ;Prepared for delay loop
             JR   NZ,Selftest    ;Failed, so restart
 
 SelftestEnd:
-            IN   A,(kPrtOut)
-            AND  0b10001111     ;Clear 3 bits
-            OUT  (kPrtOut),A    ;Write it out
+            XOR  A
+            OUT  (kPrtOut),A    ;All LEDs off
 
 
 ; **********************************************************************
