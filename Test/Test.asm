@@ -16,7 +16,7 @@ CH_CMD:	.EQU	$71		; CH376 Command Port
             .ORG  $0000
 
 ColdStrt:   DI                  ;Disable interrupts
-            LD   SP, $FFFF     ;Initialise system stack pointer
+            LD   SP, $FFFF      ;Initialise system stack pointer
             LD A,PIO_CFG 		; 
             OUT (PIO_M),A		; 
 
@@ -26,44 +26,24 @@ ColdStrt:   DI                  ;Disable interrupts
             CALL RC2014_SerialSIO2_IniSend
 
 Loop:
-           LD   DE,szStartup   ;="Devices:"
-           CALL OutputZString  ;Output message at DE
+            LD   DE,szStartup   ;="Devices:"
+            CALL OutputZString  ;Output message at DE
 
-            ; LD A,$01           ; Get Ver
-            ; OUT (CH_CMD),A      ; send
-            ; IN A,(CH_DAT)       ; read
-            ; CALL PRINT8
+            LD A,$01           ; Get Ver
+            OUT (CH_CMD),A      ; send
+            IN A,(CH_DAT)       ; read
+            CALL StrWrHexByte
 
-            ; LD A,$06           ; CHK
-            ; OUT (CH_CMD),A      ; send
-            ; LD A,$A5           ; data
-            ; OUT (CH_CMD),A      ; send
-            ; IN A,(CH_DAT)       ; read
-            ; CALL PRINT8
+            LD A,$06           ; CHK
+            OUT (CH_CMD),A      ; send
+            LD A,$03           ; data
+            OUT (CH_CMD),A      ; send
+            IN A,(CH_DAT)       ; read
+            CALL StrWrHexByte
 
-            LD A,$01           ; bit 5
+            LD A,$02            ; all off
             OUT (PIO_C),A		; Set port A 
-            LD BC,$6666   ; short second delay
-            CALL DELAY
-
-            LD A,$02           ; all off
-            OUT (PIO_C),A		; Set port A 
-            LD BC,$FFFF   ; long second delay
-            CALL DELAY
-
-            LD A,$04           ; bit 1+5
-            OUT (PIO_C),A		; Set port A 
-            LD BC,$6666   ; short second delay
-            CALL DELAY
-
-            LD A,$08           ; all off
-            OUT (PIO_C),A		; Set port A 
-            LD BC,$FFFF   ; long second delay
-            CALL DELAY
-
-            LD A,$00           ; all off
-            OUT (PIO_C),A		; Set port A 
-            LD BC,$FFFF   ; long second delay
+            LD BC,$FFFF         ; long-ish delay
             CALL DELAY
 
             JP Loop
@@ -126,27 +106,33 @@ Next:       LD   A,(DE)         ;Get character from string
 Finished:   POP  AF
             RET
 
-PRINT8:
-            OUT (PIO_C),A		; Write low nibble
+; String: Write hex byte to string buffer
+;   On entry: A = Hex byte
+;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
+StrWrHexByte:
             PUSH AF
+            RRA                 ; Shift top nibble to
+            RRA                 ;  botom four bits..
+            RRA
+            RRA
+            CALL StrWrHexNibble
+            POP  AF
+            CALL StrWrHexNibble
+            RET
 
-            LD BC,$6666         ; short second delay
-            CALL DELAY
-            LD  A,$00          
-            OUT (PIO_C),A		; all off
-            LD BC,$6666         ; short second delay
-            CALL DELAY
-            POP AF
-            RRA
-            RRA
-            RRA
-            RRA
-            OUT (PIO_C),A		; write high nibble
-            LD BC,$FFFF         ; long second delay
-            CALL DELAY
-            OUT (PIO_C),A		; all off
-            LD BC,$6666         ; short second delay
-            CALL DELAY
+
+; String: Write hex nibble to string buffer
+;   On entry: A = Hex nibble
+;   On exit:  AF BC DE HL IX IY I AF' BC' DE' HL' preserved
+StrWrHexNibble:
+            PUSH AF
+            AND $0F           ;Mask off nibble
+            CP   $0A           ;Nibble > 10 ?
+            JR   C,Skip        ;No, so skip
+            ADD  A,7            ;Yes, so add 7
+Skip:       ADD  A,$30         ;Add ASCII '0'
+            CALL OutputChar_T3  ;Write character
+            POP  AF
             RET
 
 ; INPUT: Loop count in BC
