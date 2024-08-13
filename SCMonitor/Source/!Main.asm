@@ -12,9 +12,9 @@
 
 ;#DEFINE    BUILD L1            ;LiNC80 SBC1 standard 32k ROM
 
-#DEFINE     BUILD R1           ;Lottery 08K ROM
+;#DEFINE    BUILD R1            ;Lottery 08K ROM
 ;#DEFINE    BUILD R2            ;Lottery 16K ROM
-;#DEFINE    BUILD R3            ;
+#DEFINE     BUILD R3            ;Lottery 08K RAM
 ;#DEFINE    BUILD R4            ;
 
 ;#DEFINE    BUILD S1            ;SC_S1  standard ROM (SC101)
@@ -72,6 +72,8 @@
 #IF         BUILD = "Z2"
 #INCLUDE    Hardware\Z80SBCRC\Build.asm
 #ENDIF
+
+
 
 
 

@@ -291,7 +291,7 @@ ColdStrt:   DI                  ;Disable interrupts
 #IF         BUILD = "R*"
             ; Need to init the PII in RAM as it will enable outputs on PORT B (And other ports)
             ; And the weak pullup/down boot bank selection will be overwritten
-            ; Copy the code to a high ish address (0xA00)  so it can run from ROM or RAM
+            ; Copy the code to a high ish address (0xF000)  so it can run from ROM or RAM
             ; COPY ROUTINE TO UPPER RAM
             LD	HL,PII_Initialise
             LD	DE,$F000

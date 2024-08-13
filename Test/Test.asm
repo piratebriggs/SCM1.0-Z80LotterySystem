@@ -26,34 +26,33 @@ ColdStrt:   DI                  ;Disable interrupts
             call RC2014_SerialSIO2_IniSend
 
 Loop:
-            LD   A,$08            ; flash
-            OUT  (PIO_C),A		; Set port A 
+            LD   A,$08              ; flash
+            OUT  (PIO_C),A		    ; Set port A 
             call medium_delay
-            LD   A,$00            ; all off
-            OUT  (PIO_C),A		; Set port A 
+            LD   A,$00              ; all off
+            OUT  (PIO_C),A		    ; Set port A 
             call medium_delay
 
-            LD   DE,szNL   ;
-            call OutputZString  ;Output message at DE
+            LD   DE,szNL
+            call OutputZString      ; Output message at DE
 
-            LD   DE,szStartup   ;
-            call OutputZString  ;Output message at DE
+            LD   DE,szStartup
+            call OutputZString      ; Output message at DE
 
 CH_Reset:
             ld   a, RESET_ALL
-            call CH_Send_Cmd    ; send
+            call CH_Send_Cmd        ; send
             call CH_Busy_Wait
 
             call CH_Exists
 
 CH_Host_Mode:
             ld   a, SET_USB_MODE
-            call CH_Send_Cmd    ; send
+            call CH_Send_Cmd        ; send
             ld   a, 6
             call CH_Send_Data
             call CH_Busy_Wait
-            IN   A,(CH_DAT)       ; read
-            call PrintHexByte
+            call CH_Read_Data
             cp   CMD_RET_SUCCESS
             jr   z, CH_Disk_Conect
             JP   Loop
@@ -61,64 +60,108 @@ CH_Host_Mode:
 
 CH_Disk_Conect:
             ld   a, DISK_CONNECT
-            call CH_Send_Cmd    ; send
+            call CH_Send_Cmd        ; send
             call CH_Chk_Success
             jr   z, CH_Disk_Mount
-            LD   DE,szErrDisk   ;
-            call OutputZString  ;Output message at DE
+            LD   DE,szErrDisk
+            call OutputZString      ; Output message at DE
             JP   Loop
 
 CH_Disk_Mount:
         	ld   a, DISK_MOUNT
-            call CH_Send_Cmd    ; send
+            call CH_Send_Cmd        ; send
             call CH_Chk_Success
             jr   z, CH_OpenFile
-            LD   DE,szErrDisk   ;
-            call OutputZString  ;Output message at DE
+            LD   DE,szErrDisk
+            call OutputZString      ; Output message at DE
             JP   Loop
 
 CH_OpenFile:
         	ld   a, SET_FILE_NAME
-            call CH_Send_Cmd    ; send
-            LD   DE,szBootBin   ;
+            call CH_Send_Cmd        ; send
+            LD   DE,szBootBin
 CH_OpenFile1:
-            LD   A,(DE)         ;Get character from string
-            call CH_Send_Data     ;Send char (inc NULL)
-            INC  DE             ;Point to next character
-            OR   A              ;Null terminator?
-            JR   Z,CH_OpenFile2 ;Yes, so we've finished
-            JR   CH_OpenFile1   ;Go process next character
+            LD   A,(DE)             ; Get character from string
+            call CH_Send_Data       ; Send char (inc NULL)
+            INC  DE                 ; Point to next character
+            OR   A                  ; Null terminator?
+            JR   Z,CH_OpenFile2     ; Yes, so we've finished
+            JR   CH_OpenFile1       ; Go process next character
 CH_OpenFile2:
         	ld   a, FILE_OPEN
-            call CH_Send_Cmd    ; send
+            call CH_Send_Cmd        ; send
             call CH_Chk_Success
-            jr   z, CH_FileFound
-            LD   DE,szErrFile   ;
-            call OutputZString  ;Output message at DE
+            jr   z, CH_Read_File
+            LD   DE,szErrFile
+            call OutputZString      ; Output message at DE
             JP   Loop
 
-CH_FileFound:
-            LD   A,$0F            ; flash
-            OUT  (PIO_C),A		; Set port A 
+CH_Read_File:
+        	ld hl, $8000            ; We're reading to bottom of RAM
+
+            ld a, BYTE_READ
+            call CH_Send_Cmd
+            ld a, 255               ; Request all of the file
+            call CH_Send_Data
+            ld a, 255               ; Yes, all!
+            call CH_Send_Data
+
+CH_Read_Chunk:
+            call CH_Chk_Success     ; USB_INT_SUCCESS here means the file is finished
+            jr   z, CH_CloseFile    ; We could check for USB_INT_DISK_READ here?
+
+            ld a, RD_USB_DATA0
+            call CH_Send_Cmd
+            call CH_Read_Data       ; A = Length of chunk
+
+            ld b, a                 ; number of bytes in B
+            ld c, CH_DAT            ; Port to read from 
+            inir                    ; A rare use of In, Increase & Repeat!!!
+
+        	ld a, BYTE_RD_GO        ; Next chunk please
+            call CH_Send_Cmd
+            jr   CH_Read_Chunk
+
+CH_CloseFile:
+            ld a, FILE_CLOSE
+            call CH_Send_Cmd
+            ld a, 0                 ; 0 = dont update file size (should be read-only)
+            call CH_Send_Data
+            call CH_Chk_Success
+            jP   nz, Loop           ; Do we care?
+
+            LD   DE,szNL            ; New Line
+            call OutputZString      ; Output message at DE
+            LD   HL, $8000
+            LD   b, 16
+Prloop:            
+            LD   a,(HL)
+            CALL PrintHexByte
+            inc  HL
+            djnz Prloop
+
+            JP   $8000              ; Boot, baby!
+
+Hang_Around:
+            LD   A,$0F              ; flash
+            OUT  (PIO_C),A		    ; Set port A 
             call medium_delay
-            LD   A,$00            ; all off
-            OUT  (PIO_C),A		; Set port A 
+            LD   A,$00              ; all off
+            OUT  (PIO_C),A		    ; Set port A 
             call medium_delay
 
-            JP   CH_FileFound
+            JP   Hang_Around
 
 CH_Exists:
             LD   A,GET_IC_VER       ; Get Ver
             call CH_Send_Cmd        ; send
-            IN   A,(CH_DAT)         ; read
-            call PrintHexByte
+            call CH_Read_Data
 
             LD   A,CHECK_EXIST      ; CHK
             call CH_Send_Cmd        ; send
             LD   A,$03              ; data
             call CH_Send_Data
-            IN   A,(CH_DAT)         ; read
-            call PrintHexByte
+            call CH_Read_Data
             ret
 
 CH_Busy_Wait:
@@ -149,6 +192,13 @@ CH_Send_Data:
             call PrintHexByte
             OUT  (CH_DAT),A         ; send
             ret
+
+CH_Read_Data:
+            call CH_Busy_Wait
+            IN   A,(CH_DAT)         ; read
+            call PrintHexByte
+            ret
+
 
 ; RC2014 serial SIO/2 write initialisation data 
 ;   On entry: C = Address of SIO control register
