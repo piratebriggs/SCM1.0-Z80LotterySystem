@@ -16,9 +16,10 @@ kPII_A:     .EQU 0x14           ;PII Port A
 kPII_B:     .EQU 0x15           ;PII Port B
 kPII_C:     .EQU 0x16           ;PII Port C
 kPII_M:     .EQU 0x17           ;PII Config
-kPII_CFG:	.EQU 0x82       	;Active, Active, Mode 0, A & C Outputs. B Left as Input
-kPII_BInit: .EQU 0x00           ;
-kPII_CInit: .EQU 0x00           ;
+; kPII_CFG:	.EQU 0x82       	;Active, Mode 0, A & C Outputs. B Left as Input
+kPII_CFG:	.EQU 0x80       	;Active, Mode 0, A, B & C Outputs.
+; kPII_BInit: .EQU 0x00           ;in Config.asm
+; kPII_CInit: .EQU 0x00           ;Not used
 
 ; Include device modules
 #INCLUDE    Hardware\RC2014\SerialSIO2.asm
@@ -36,8 +37,8 @@ szStartup:  .DB "Z80-Lottery",kNull
 PII_Initialise:
             LD A,kPII_CFG 		; Load PII Config vakue
             OUT (kPII_M),A		; Set PII Config
-            ;LD A,kPII_BInit	    ; 
-            ;OUT (kPII_B),A  	; Write it out
+            LD A,kPII_BInit	    ; 
+            OUT (kPII_B),A  	; Write it out
             ;LD A,kPII_CInit	    ; 
             ;OUT (kPII_C),A  	; Write it out
         	RET				    ; AND DONE
