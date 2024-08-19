@@ -776,19 +776,20 @@ CmdScript:  JP   ScrList
 
 ; Command: Step: S [<start address>]
 #IFDEF      IncludeDisassemble
-CmdStep:    LD   A,kReportBad   ;Only report bad hex parameter
-            CALL CLIGetHexParam
-            RET  NZ             ;Abort if bad hex in parameter
-            JR   NC,@Restore    ;Skip if no address parameter
-            LD   (iPC),HL       ;Store supplied address as PC
-            LD   HL,kSPUsr      ;Get top of user stack
-            LD   DE,WarmStart   ;Get return address
-            DEC  HL             ;  and 'push' it onto
-            LD   (HL),D         ;  user stack
-            DEC  HL
-            LD   (HL),E
-            LD   (iSP),HL       ;Store as user stack pointer
-@Restore:   JP   BPStep         ;Execute using stored register values
+CmdStep:    RET
+;             LD   A,kReportBad   ;Only report bad hex parameter
+;             CALL CLIGetHexParam
+;             RET  NZ             ;Abort if bad hex in parameter
+;             JR   NC,@Restore    ;Skip if no address parameter
+;             LD   (iPC),HL       ;Store supplied address as PC
+;             LD   HL,kSPUsr      ;Get top of user stack
+;             LD   DE,WarmStart   ;Get return address
+;             DEC  HL             ;  and 'push' it onto
+;             LD   (HL),D         ;  user stack
+;             DEC  HL
+;             LD   (HL),E
+;             LD   (iSP),HL       ;Store as user stack pointer
+; @Restore:   JP   BPStep         ;Execute using stored register values
 #ENDIF
 
 

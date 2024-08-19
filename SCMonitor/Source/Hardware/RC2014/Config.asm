@@ -12,10 +12,10 @@ kHardID:    .EQU 3              ;Hardware ID number
 #IF         BUILD = "R1"
 kConfMinor: .EQU '1'            ;Config: 1 to 9 = official, 0 = user
 kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000
-kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
+kData:      .EQU 0x7C00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
 kROMTop:    .EQU 0x1F           ;Top of banked ROM (hi byte only)
-kPII_BInit: .EQU 0x0F           ;ROM_EN=0, Bank F (0xxx 1111)
+kPII_BInit: .EQU 0x00           ;ROM_EN=0, Bank 0 (0xxx 0000)
 #ENDIF
 
 ; Standard build: 16k ROM. Bank F selected
@@ -25,16 +25,16 @@ kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
 kROMTop:    .EQU 0x3F           ;Top of banked ROM (hi byte only)
-kPII_BInit: .EQU 0x0F           ;ROM_EN=0, Bank F (0xxx 1111)
+kPII_BInit: .EQU 0x00           ;ROM_EN=0, Bank 0 (0xxx 0000)
 #ENDIF
 
-; 8k RAM. Bank 0 selected
+; 16k RAM. Bank 0 selected
 #IF         BUILD = "R3"
 kConfMinor: .EQU '3'            ;Config: 1 to 9 = official, 0 = user
 kCode:      .EQU 0x8000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
-kROMTop:    .EQU 0x9F           ;Top of banked ROM (hi byte only)
+kROMTop:    .EQU 0xBF           ;Top of banked ROM (hi byte only)
 kPII_BInit: .EQU 0x00           ;ROM_EN=0, Bank 0 (0xxx 0000)
 #ENDIF
 
@@ -90,7 +90,7 @@ kDelayCnt:  .EQU 306            ;Loop count for 1 ms delay at 7.3728 MHz
 #DEFINE     IncludeMonitor      ;onitor essentials
 #DEFINE     IncludeAssembler    ;Assembler (needs disassembler)
 ;#DEFINE    IncludeBaud         ;Baud rate setting
-#DEFINE     IncludeBreakpoint   ;Breakpoint and single stepping
+;#DEFINE     IncludeBreakpoint   ;Breakpoint and single stepping
 #DEFINE     IncludeCommands     ;Command Line Interprester (CLI)
 #DEFINE     IncludeDisassemble  ;Disassembler 
 #DEFINE     IncludeHelp         ;Extended help text

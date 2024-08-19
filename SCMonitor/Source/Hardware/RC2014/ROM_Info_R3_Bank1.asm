@@ -8,6 +8,24 @@
 
             .CODE
 
+            .ORG 0xa000         ;Inserted files start here
+
+; Executable: RomWBW.COM
+RomWBWCode:
+#INSERTHEX  ..\..\Test\RomWbw_load.hex
+RomWBWCodeEnd:
+
+
+            .ORG 0xBFE0         
+
+            .DW  0xAA55         ;Identifier
+            .DB  "RomWBW  "     ;File name ("BOOT0.COM")
+            .DB  0x01           ;File type 1 = Monitor command
+            .DB  0xA0           ;Run in RAM at 0xA000
+            .DW  RomWBWCode        ;Start address
+            .DW  RomWBWCodeEnd-RomWBWCode ;Length
+
+
 #INCLUDE    Monitor\MonitorInfo.asm
 ; Include Monitor.EXE information at top of bank 1. eg:
 ;           .ORG 0x1FF0         ;First ROMFS file in 8k bank
