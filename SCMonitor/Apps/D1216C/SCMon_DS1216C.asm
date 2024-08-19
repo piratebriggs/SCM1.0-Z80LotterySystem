@@ -5,12 +5,14 @@
 
             .PROC Z80           ;SCWorkshop select processor
 
-Location:   .EQU 0x001B         ;unused address in low ROM space
+Location:   .EQU 0xF000         ;unused address in high RAM space
 
-            .ORG 0x8000         ;This needs to run from upper bank
+            .ORG 0x2000         ;This needs to run from lower bank
                                 ;Or else the pattern will be interrupted
                                 ;By Z80 instruction reads
 Start:
+            LD  (0xF002),SP     ; store SP
+            LD  SP, 0x2100
             LD   HL,Location    ;Any RAM location mapped to the appropriate chip will do
             JR   @ReadTime      ;Comment this out to set date/time
 
@@ -43,9 +45,10 @@ Start:
             CALL @ReadData              ;Write it out
 
 @End:
+            LD  SP,(0xF002)     ; restore SP
             LD   DE,@Msg        ;Message
             LD   C,6            ;API 6
-            RST  0x30           ;  = Output message at DE
+            Call 0x8030           ;  = Output message at DE
             RET
 
 ; HL = Location to write
@@ -116,12 +119,12 @@ Start:
 ; Initial values here can be written to set date/time/osc enable
 @DSData:    .DB  0x01   ; 0.1 sec      | 0.01 sec (00-99)
             .DB  0x00   ; 10 sec       | seconds = (00-59)
-            .DB  0x30   ; 10 mins      | mins = (00-59)
-            .DB  0x15   ; bit 7 = 24 hour mode (0), bits 5,4 = 10 hours | hours (00-23) = 0 
-            .DB  0x14   ; OSC=0, RST=1 | Day = (1-7)
-            .DB  0x14   ; 10 date      | date = (01-31)
-            .DB  0x03   ; 10 month     | month = (01-12)
-            .DB  0x14   ; 10 year      | year = (00-99)
+            .DB  0x09   ; 10 mins      | mins = (00-59)
+            .DB  0x10   ; bit 7 = 24 hour mode (0), bits 5,4 = 10 hours | hours (00-23) = 0 
+            .DB  0x11   ; OSC=0, RST=1 | Day = (1-7)
+            .DB  0x19   ; 10 date      | date = (01-31)
+            .DB  0x08   ; 10 month     | month = (01-12)
+            .DB  0x24   ; 10 year      | year = (00-99)
 @DSDataEnd:
 
 
