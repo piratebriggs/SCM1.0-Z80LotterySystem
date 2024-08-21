@@ -15,7 +15,8 @@ kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0x7C00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
 kROMTop:    .EQU 0x1F           ;Top of banked ROM (hi byte only)
-kPII_BInit: .EQU 0x00           ;ROM_EN=0, Bank 0 (0xxx 0000)
+kPII_BInit: .EQU 0x00           ;ROM_EN=0 (0xxx xxx)
+kBNK_Init:  .EQU 0x00           ;Bank Sel = 0
 #ENDIF
 
 ; Standard build: 16k ROM. Bank F selected
@@ -25,7 +26,8 @@ kCode:      .EQU 0x0000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
 kROMTop:    .EQU 0x3F           ;Top of banked ROM (hi byte only)
-kPII_BInit: .EQU 0x00           ;ROM_EN=0, Bank 0 (0xxx 0000)
+kPII_BInit: .EQU 0x00           ;ROM_EN=0 (0xxx xxx)
+kBNK_Init:  .EQU 0x00           ;Bank Sel = 0
 #ENDIF
 
 ; 16k RAM. Bank 0 selected
@@ -35,7 +37,8 @@ kCode:      .EQU 0x8000         ;Typically 0x0000 or 0xE000
 kData:      .EQU 0xFC00         ;Typically 0xFC00 (to 0xFFFF)
 kROMBanks:  .EQU 1              ;Number of software selectable ROM banks
 kROMTop:    .EQU 0xBF           ;Top of banked ROM (hi byte only)
-kPII_BInit: .EQU 0x00           ;ROM_EN=0, Bank 0 (0xxx 0000)
+kPII_BInit: .EQU 0x00           ;ROM_EN=0 (0xxx xxx)
+kBNK_Init:  .EQU 0x00           ;Bank Sel = 0
 #ENDIF
 
 ; TBC
