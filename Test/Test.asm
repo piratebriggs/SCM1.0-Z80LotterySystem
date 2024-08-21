@@ -1,24 +1,29 @@
 
-PIO_A:	.EQU	$74		; CA80 user 8255 base address 	  (port A)
-PIO_B:	.EQU	$75		; CA80 user 8255 base address + 1 (port B)
-PIO_C:	.EQU	$76		; CA80 user 8255 base address + 2 (port C)
-PIO_M:	.EQU	$77		; CA80 user 8255 control register
-PIO_CFG:	.EQU	$82	; Active, Mode 0, A & C Outputs. B Left as Input
+PIO_A:	    .EQU	$74		; CA80 user 8255 base address 	  (port A)
+PIO_B:	    .EQU	$75		; CA80 user 8255 base address + 1 (port B)
+PIO_C:	    .EQU	$76		; CA80 user 8255 base address + 2 (port C)
+PIO_M:	    .EQU	$77		; CA80 user 8255 control register
+PIO_CFG:	.EQU	$82	    ; Active, Mode 0, A & C Outputs. B Left as Input
 
-kSIOAConT3: .EQU $61        ;I/O address of control register A
-kSIOADatT3: .EQU $60        ;I/O address of data register A
-kSIOBConT3: .EQU $63        ;I/O address of control register B
-kSIOBDatT3: .EQU $62        ;I/O address of data register B
+kSIOAConT3: .EQU    $61     ; I/O address of control register A
+kSIOADatT3: .EQU    $60     ; I/O address of data register A
+kSIOBConT3: .EQU    $63     ; I/O address of control register B
+kSIOBDatT3: .EQU    $62     ; I/O address of data register B
 
-CH_DAT:	.EQU	$70		; CH376 Data Port
-CH_CMD:	.EQU	$71		; CH376 Command Port
+CH_DAT:	    .EQU	$70		; CH376 Data Port
+CH_CMD:	    .EQU	$71		; CH376 Command Port
+
+BNKSEL:	    .EQU	$64		; Bank Sel register in PicoROM
 
             .ORG  $0000
 
-ColdStrt:   DI                  ;Disable interrupts
-            LD   SP, $FFFF      ;Initialise system stack pointer
+ColdStrt:   DI                  ; Disable interrupts
+            LD   SP, $FFFF      ; Initialise system stack pointer
             LD   A,PIO_CFG 		; 
-            OUT  (PIO_M),A		; 
+            OUT  (PIO_M),A		; Configure PIO
+            LD   A,$00  		; Ensure we're in bank 0
+            LD   C,BNKSEL       ; 
+            OUT  (C),A		    ; don't use out (nn),a as upper bits aren't 0
 
             LD   C,kSIOAConT3   ;SIO/2 channel A control port
             call RC2014_SerialSIO2_IniSend
@@ -32,9 +37,6 @@ Loop:
             LD   A,$00              ; all off
             OUT  (PIO_C),A		    ; Set port A 
             call medium_delay
-
-            LD   DE,szNL
-            call OutputZString      ; Output message at DE
 
             LD   DE,szStartup
             call OutputZString      ; Output message at DE
@@ -110,6 +112,9 @@ CH_Read_Chunk:
             call CH_Chk_Success     ; USB_INT_SUCCESS here means the file is finished
             jr   z, CH_CloseFile    ; We could check for USB_INT_DISK_READ here?
 
+            ld   a, '.'
+            call OutputChar_T3
+
             ld a, RD_USB_DATA0
             call CH_Send_Cmd
             call CH_Read_Data       ; A = Length of chunk
@@ -130,27 +135,27 @@ CH_CloseFile:
             call CH_Chk_Success
             jP   nz, Loop           ; Do we care?
 
-            LD   DE,szNL            ; New Line
-            call OutputZString      ; Output message at DE
-            LD   HL, $8000
-            LD   b, 16
-Prloop:            
-            LD   a,(HL)
-            CALL PrintHexByte
-            inc  HL
-            djnz Prloop
+;             LD   DE,szNL            ; New Line
+;             call OutputZString      ; Output message at DE
+;             LD   HL, $8000
+;             LD   b, 16
+; Prloop:            
+;             LD   a,(HL)
+;             CALL PrintHexByte
+;             inc  HL
+;             djnz Prloop
 
             JP   $8000              ; Boot, baby!
 
-Hang_Around:
-            LD   A,$0F              ; flash
-            OUT  (PIO_C),A		    ; Set port A 
-            call medium_delay
-            LD   A,$00              ; all off
-            OUT  (PIO_C),A		    ; Set port A 
-            call medium_delay
+; Hang_Around:
+;             LD   A,$0F              ; flash
+;             OUT  (PIO_C),A		    ; Set port A 
+;             call medium_delay
+;             LD   A,$00              ; all off
+;             OUT  (PIO_C),A		    ; Set port A 
+;             call medium_delay
 
-            JP   Hang_Around
+;             JP   Hang_Around
 
 CH_Exists:
             LD   A,GET_IC_VER       ; Get Ver
@@ -174,29 +179,29 @@ CH_Chk_Success:
             call CH_Busy_Wait
             ld   a, GET_STATUS
             OUT  (CH_CMD),A         ; send
-            ld   a, '?'
-            call OutputChar_T3
+            ; ld   a, '?'
+            ; call OutputChar_T3
             IN   A,(CH_DAT)         ; read
-            call PrintHexByte
+            ; call PrintHexByte
             cp   USB_INT_SUCCESS
             ret
 
 CH_Send_Cmd:
-            LD   DE,szNL            ; New Line
-            call OutputZString      ; Output message at DE
-            call PrintHexByte
+            ; LD   DE,szNL            ; New Line
+            ; call OutputZString      ; Output message at DE
+            ; call PrintHexByte
             OUT (CH_CMD),A          ; send
             ret
 
 CH_Send_Data:
-            call PrintHexByte
+            ; call PrintHexByte
             OUT  (CH_DAT),A         ; send
             ret
 
 CH_Read_Data:
             call CH_Busy_Wait
             IN   A,(CH_DAT)         ; read
-            call PrintHexByte
+            ; call PrintHexByte
             ret
 
 
@@ -311,7 +316,7 @@ kSIOTxRdy:  .EQU 2              ;Transmit data empty bit number
 CHBZ:       .EQU 4              ;CH376 Busy Flag
 
 szNL:       .DB 13,10,0
-szStartup:  .DB "Z80-Lottery",13,10,0
+szStartup:  .DB 13,10,"Z80-Lottery",13,10,0
 szErrDisk:  .DB "Disk?",13,10,0
 szErrFile:  .DB "File?",13,10,0
 szBootBin:  .DB "/BOOT.BIN",0
@@ -368,6 +373,6 @@ ERR_DISK_FULL: .equ $B1
 ERR_FDT_OVER: .equ $B2
 ERR_FILE_CLOSE: .equ $B4
 THE_END:
-            .FILL $1000-THE_END
+            .FILL $200-THE_END
             .END
 

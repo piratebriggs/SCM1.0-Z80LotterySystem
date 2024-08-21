@@ -1,56 +1,66 @@
-CH_DAT:	.EQU	$70		; CH376 Data Port
-CH_CMD:	.EQU	$71		; CH376 Command Port
+CH_DAT:	    .EQU	$70		; CH376 Data Port
+CH_CMD:	    .EQU	$71		; CH376 Command Port
+
+BNKSEL:	    .EQU	$64		; Bank Sel register in PicoROM
 
             .ORG  $A000
 
 AppStrt:   
             LD   DE,szStartup       ;message
             call OutputZString
-
             JP   CH_Reset
 LoadEmup:
             ld   a, $00
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
             LD   DE,szBootBin0
             call CH_OpenFile
 
             ld   a, $01
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
             LD   DE,szBootBin1
             call CH_OpenFile
 
             ld   a, $02
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
             LD   DE,szBootBin2
             call CH_OpenFile
 
             ld   a, $03
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
             LD   DE,szBootBin3
             call CH_OpenFile
 
             ld   a, $04
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
             LD   DE,szBootBin4
             call CH_OpenFile
 
             ld   a, $05
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
             LD   DE,szBootBin5
             call CH_OpenFile
 
             ld   a, $06
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
             LD   DE,szBootBin6
             call CH_OpenFile
 
             ld   a, $07
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
             LD   DE,szBootBin7
             call CH_OpenFile
 
             ld   a, $00
-            out  ($15),a
+            ld   bc, BNKSEL
+            out  (c),a
 
 Exit:
             LD   DE,szExit          ;message
