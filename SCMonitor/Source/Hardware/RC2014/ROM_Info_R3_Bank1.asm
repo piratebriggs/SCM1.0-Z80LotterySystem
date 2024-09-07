@@ -16,7 +16,7 @@ RomWBWCode:
 RomWBWCodeEnd:
 
 
-            .ORG 0xBFE0         
+            .ORG 0xBFD0
 
             .DW  0xAA55         ;Identifier
             .DB  "RomWBW  "     ;File name ("BOOT0.COM")
@@ -25,6 +25,12 @@ RomWBWCodeEnd:
             .DW  RomWBWCode        ;Start address
             .DW  RomWBWCodeEnd-RomWBWCode ;Length
 
+            .DW  0xAA55         ;Identifier
+            .DB  "CPM     "     ;File name ("BOOT0.COM")
+            .DB  0x01           ;File type 1 = Monitor command
+            .DB  0xA0           ;Run in RAM at 0xA000
+            .DW  RomWBWCode+0x10        ;Start address
+            .DW  RomWBWCodeEnd-RomWBWCode ;Length
 
 #INCLUDE    Monitor\MonitorInfo.asm
 ; Include Monitor.EXE information at top of bank 1. eg:

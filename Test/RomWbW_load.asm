@@ -5,62 +5,74 @@ BNKSEL:	    .EQU	$64		; Bank Sel register in PicoROM
 
             .ORG  $A000
 
+Start_RomWBW:
+            LD  HL,Load_RomWBW
+            LD  (Loader),HL
+            JP  AppStrt
+
+            .ORG  $A010
+Start_Cpm:
+            LD  HL,Load_Cpm
+            LD  (Loader),HL
+            JP  AppStrt
+
 AppStrt:   
             LD   DE,szStartup       ;message
             call OutputZString
             JP   CH_Reset
-LoadEmup:
+
+Load_Cpm:
             ld   a, $00
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
+            LD   DE,szCpmBin
+            call CH_OpenFile
+            JP  Exit
+
+Load_RomWBW:
+            ld   a, $00
+            call Bnk_Sel
             LD   DE,szBootBin0
             call CH_OpenFile
 
             ld   a, $01
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
             LD   DE,szBootBin1
             call CH_OpenFile
 
             ld   a, $02
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
             LD   DE,szBootBin2
             call CH_OpenFile
 
             ld   a, $03
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
             LD   DE,szBootBin3
             call CH_OpenFile
 
             ld   a, $04
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
             LD   DE,szBootBin4
             call CH_OpenFile
 
             ld   a, $05
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
             LD   DE,szBootBin5
             call CH_OpenFile
 
             ld   a, $06
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
             LD   DE,szBootBin6
             call CH_OpenFile
 
             ld   a, $07
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
             LD   DE,szBootBin7
             call CH_OpenFile
 
             ld   a, $00
-            ld   bc, BNKSEL
-            out  (c),a
+            call Bnk_Sel
+            jp   Exit
+
 
 Exit:
             LD   DE,szExit          ;message
@@ -68,7 +80,12 @@ Exit:
 
             JP   $0000
             ret
-            
+
+Bnk_Sel:
+            ld   bc, BNKSEL
+            out  (c),a
+            ret
+
 CH_Reset:
             ld   a, RESET_ALL
             call CH_Send_Cmd        ; send
@@ -105,6 +122,11 @@ CH_Disk_Mount:
             LD   DE,szErrDisk
             call OutputZString      ; Output message at DE
             JP   Exit
+
+LoadEmup:
+            LD   HL,(Loader)
+            JP   (HL)
+            HALT
 
 CH_OpenFile:
         	ld   a, SET_FILE_NAME
@@ -263,6 +285,8 @@ OutputZString:
 
 CHBZ:       .EQU 4              ;CH376 Busy Flag
 
+Loader:     .DW 0               ; The routine to call after initialising CH376
+
 szNL:       .DB 13,10,0
 szStartup:  .DB "RomWbW Loading...",13,10,0
 szExit:     .DB "Finished",13,10,0
@@ -276,6 +300,7 @@ szBootBin4: .DB "/ROMWBW4.BIN",0
 szBootBin5: .DB "/ROMWBW5.BIN",0
 szBootBin6: .DB "/ROMWBW6.BIN",0
 szBootBin7: .DB "/ROMWBW7.BIN",0
+szCpmBin:   .DB "/CPM.BIN",0
 
 GET_IC_VER: .equ $01
 SET_BAUDRATE: .equ $02
