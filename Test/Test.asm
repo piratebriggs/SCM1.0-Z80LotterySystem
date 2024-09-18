@@ -3,7 +3,7 @@ PIO_A:	    .EQU	$74		; CA80 user 8255 base address 	  (port A)
 PIO_B:	    .EQU	$75		; CA80 user 8255 base address + 1 (port B)
 PIO_C:	    .EQU	$76		; CA80 user 8255 base address + 2 (port C)
 PIO_M:	    .EQU	$77		; CA80 user 8255 control register
-PIO_CFG:	.EQU	$82	    ; Active, Mode 0, A & C Outputs. B Left as Input
+PIO_CFG:	.EQU    $80     ; Active, Mode 0, A, B & C Outputs.
 
 kSIOAConT3: .EQU    $61     ; I/O address of control register A
 kSIOADatT3: .EQU    $60     ; I/O address of data register A
@@ -21,9 +21,6 @@ ColdStrt:   DI                  ; Disable interrupts
             LD   SP, $FFFF      ; Initialise system stack pointer
             LD   A,PIO_CFG 		; 
             OUT  (PIO_M),A		; Configure PIO
-            LD   A,$00  		; Ensure we're in bank 0
-            LD   C,BNKSEL       ; 
-            OUT  (C),A		    ; don't use out (nn),a as upper bits aren't 0
 
             LD   C,kSIOAConT3   ;SIO/2 channel A control port
             call RC2014_SerialSIO2_IniSend
